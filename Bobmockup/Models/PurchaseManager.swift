@@ -88,13 +88,18 @@ final class PurchaseManager {
     
     func loadProducts() async {
         purchaseState = .loading
+        print("🔍 Chargement des produits pour ID: \(Self.premiumProductID)")
         do {
             products = try await Product.products(for: [Self.premiumProductID])
             purchaseState = .idle
-            print("Produits chargés: \(products.count)")
+            print("✅ Produits chargés: \(products.count)")
+            for product in products {
+                print("   - \(product.id): \(product.displayName) - \(product.displayPrice)")
+            }
         } catch {
-            print("Erreur chargement produits: \(error)")
-            purchaseState = .idle // Ne pas bloquer si pas de produits
+            print("❌ Erreur chargement produits: \(error)")
+            print("   Type erreur: \(type(of: error))")
+            purchaseState = .idle
         }
     }
     
@@ -104,15 +109,10 @@ final class PurchaseManager {
             await loadProducts()
         }
         
-        // Si toujours pas de produit, mode test en DEBUG
+        // Si pas de produit disponible
         guard let product = products.first else {
-            #if DEBUG
-            // Mode test: simuler l'achat (seulement si StoreKit non configuré)
-            print("⚠️ Aucun produit StoreKit - Mode simulation")
-            await simulatePurchaseForTesting()
-            #else
-            purchaseState = .failed("Produit non disponible")
-            #endif
+            print("⚠️ Aucun produit StoreKit trouvé - Vérifiez que Configuration.storekit est lié au scheme")
+            purchaseState = .failed("Produit non disponible. Vérifiez la configuration StoreKit.")
             return
         }
         

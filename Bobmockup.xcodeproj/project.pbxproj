@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BF41498D2F20DDF200EDC5A8 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = BF41498C2F20DDF200EDC5A8 /* Configuration.storekit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BF30BA812F194F2300260441 /* Bobmockup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bobmockup.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF41498C2F20DDF200EDC5A8 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = Configuration.storekit; path = Bobmockup/Configuration.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		BF30BA782F194F2200260441 = {
 			isa = PBXGroup;
 			children = (
+				BF41498C2F20DDF200EDC5A8 /* Configuration.storekit */,
 				BF30BA832F194F2300260441 /* Bobmockup */,
 				BF30BA822F194F2300260441 /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF41498D2F20DDF200EDC5A8 /* Configuration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
