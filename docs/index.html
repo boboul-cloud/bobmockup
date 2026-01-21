@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobmockup - Créez des mockups professionnels</title>
+    <meta name="description" content="Bobmockup est l'application iOS parfaite pour créer des mockups professionnels de vos applications en quelques secondes.">
+    <meta name="keywords" content="mockup, iOS, App Store, screenshot, iPhone, iPad, MacBook">
+    <meta name="author" content="Robert Oulhen">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Bobmockup - Créez des mockups professionnels">
+    <meta property="og:description" content="L'application iOS parfaite pour créer des mockups professionnels de vos applications.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bobmockup.app">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --background: #0f0f1a;
+            --surface: #1a1a2e;
+            --text: #ffffff;
+            --text-secondary: #a1a1aa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        /* Header */
+        header {
+            padding: 24px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: rgba(15, 15, 26, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 100px;
+            background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+        }
+        
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        .hero-text h1 {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        
+        .hero-text h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero-text p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+        
+        .app-store-badge {
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        
+        .app-store-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .app-store-badge img {
+            height: 54px;
+        }
+        
+        .hero-image {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 50px 100px rgba(99, 102, 241, 0.3);
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--surface);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 120px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 60px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+        
+        .feature-card {
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 24px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--surface);
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        
+        .footer-brand p {
+            color: var(--text-secondary);
+            margin-top: 12px;
+            max-width: 300px;
+        }
+        
+        .footer-links h4 {
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--text);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .hero-text h1 {
+                font-size: 36px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 40px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">Bobmockup</div>
+            <ul class="nav-links">
+                <li><a href="#features">Fonctionnalités</a></li>
+                <li><a href="privacy.html">Confidentialité</a></li>
+                <li><a href="terms.html">Conditions</a></li>
+                <li><a href="mailto:support@bobmockup.app">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1>Créez des <span>mockups</span> professionnels en secondes</h1>
+                        <p>Transformez vos captures d'écran en visuels époustouflants pour l'App Store. Simple, rapide et élégant.</p>
+                        <a href="https://apps.apple.com/app/bobmockup/id123456789" class="app-store-badge">
+                            <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Télécharger sur l'App Store">
+                        </a>
+                    </div>
+                    <div class="hero-image">
+                        <div class="phone-mockup">
+                            <div class="phone-screen">📱</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="features" id="features">
+            <div class="container">
+                <h2 class="section-title">Fonctionnalités</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Plusieurs appareils</h3>
+                        <p>iPhone 15 Pro, iPhone 15, iPad Pro, MacBook Pro. Tous les appareils Apple modernes disponibles.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3>Fonds personnalisés</h3>
+                        <p>Couleurs unies, dégradés, mesh gradients ou vos propres images en arrière-plan.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">✨</div>
+                        <h3>Effets avancés</h3>
+                        <p>Ombres, rotation 3D et mise à l'échelle pour des mockups uniques et professionnels.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <h3>Textes et légendes</h3>
+                        <p>Ajoutez des titres accrocheurs avec des polices et couleurs personnalisables.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📤</div>
+                        <h3>Export haute qualité</h3>
+                        <p>Images 1080x1920 pixels, parfaites pour les captures App Store.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Simple et rapide</h3>
+                        <p>Interface intuitive. Créez un mockup professionnel en moins d'une minute.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">Bobmockup</div>
+                    <p>L'application iOS pour créer des mockups professionnels de vos applications.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Légal</h4>
+                    <ul>
+                        <li><a href="privacy.html">Politique de confidentialité</a></li>
+                        <li><a href="terms.html">Conditions d'utilisation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="mailto:support@bobmockup.app">Contact</a></li>
+                        <li><a href="https://github.com/robertoulhen/bobmockup">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Bobmockup. Tous droits réservés. Développé avec ❤️ par Robert Oulhen</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
