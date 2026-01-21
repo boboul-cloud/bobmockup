@@ -58,7 +58,7 @@ struct AboutView: View {
                 // Liens légaux
                 Section("Informations légales") {
                     Button {
-                        openURL(URL(string: "https://bobmockup.app/privacy")!)
+                        openURL(URL(string: "https://robertoulhen.github.io/bobmockup/privacy.html")!)
                     } label: {
                         HStack {
                             Label("Politique de confidentialité", systemImage: "hand.raised.fill")
@@ -72,7 +72,7 @@ struct AboutView: View {
                     .accessibilityHint("Ouvre la politique de confidentialité dans Safari")
                     
                     Button {
-                        openURL(URL(string: "https://bobmockup.app/terms")!)
+                        openURL(URL(string: "https://robertoulhen.github.io/bobmockup/terms.html")!)
                     } label: {
                         HStack {
                             Label("Conditions d'utilisation", systemImage: "doc.text.fill")
@@ -89,7 +89,7 @@ struct AboutView: View {
                 // Support
                 Section("Support") {
                     Button {
-                        openURL(URL(string: "mailto:support@bobmockup.app")!)
+                        openURL(URL(string: "mailto:bob.oulhen@gmail.com")!)
                     } label: {
                         HStack {
                             Label("Nous contacter", systemImage: "envelope.fill")

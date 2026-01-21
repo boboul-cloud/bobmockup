@@ -111,6 +111,6 @@ En contribuant, vous acceptez que vos contributions soient sous la même licence
 
 ## 🙋 Questions ?
 
-N'hésitez pas à ouvrir une issue ou à contacter [support@bobmockup.app](mailto:support@bobmockup.app).
+N'hésitez pas à ouvrir une issue ou à contacter [bob.oulhen@gmail.com](mailto:bob.oulhen@gmail.com).
 
 Merci de contribuer ! 🚀

@@ -46,6 +46,6 @@ Vous avez une idée ? [Proposez-la ici](https://github.com/robertoulhen/bobmocku
 
 ### 📧 Contact direct
 
-Pour toute autre question : [support@bobmockup.app](mailto:support@bobmockup.app)
+Pour toute autre question : [bob.oulhen@gmail.com](mailto:bob.oulhen@gmail.com)
 
 Nous répondons généralement sous 24-48 heures.

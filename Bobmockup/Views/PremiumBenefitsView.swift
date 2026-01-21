@@ -191,7 +191,7 @@ struct PremiumBenefitsView: View {
                         // Liens légaux
                         HStack(spacing: 24) {
                             Button {
-                                openURL(URL(string: "https://bobmockup.app/terms")!)
+                                openURL(URL(string: "https://robertoulhen.github.io/bobmockup/terms.html")!)
                             } label: {
                                 Text("Conditions")
                                     .font(.subheadline)
@@ -199,7 +199,7 @@ struct PremiumBenefitsView: View {
                             }
                             
                             Button {
-                                openURL(URL(string: "https://bobmockup.app/privacy")!)
+                                openURL(URL(string: "https://robertoulhen.github.io/bobmockup/privacy.html")!)
                             } label: {
                                 Text("Confidentialité")
                                     .font(.subheadline)

@@ -14,7 +14,7 @@ La sécurité de Bobmockup est une priorité. Si vous découvrez une vulnérabil
 
 **N'ouvrez PAS d'issue publique pour une vulnérabilité de sécurité.**
 
-Envoyez plutôt un email à : **security@bobmockup.app**
+Envoyez plutôt un email à : **bob.oulhen@gmail.com**
 
 Incluez dans votre rapport :
 - Description détaillée de la vulnérabilité

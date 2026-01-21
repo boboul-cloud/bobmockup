@@ -32,7 +32,7 @@ Ce code de conduite s'applique à la fois au sein des espaces du projet ainsi qu
 
 ## Application
 
-Les cas de comportement abusif, harcelant ou autrement inacceptable peuvent être signalés à [support@bobmockup.app](mailto:support@bobmockup.app).
+Les cas de comportement abusif, harcelant ou autrement inacceptable peuvent être signalés à [bob.oulhen@gmail.com](mailto:bob.oulhen@gmail.com).
 
 Toutes les plaintes seront examinées et étudiées et donneront lieu à une réponse jugée nécessaire et appropriée aux circonstances.
 

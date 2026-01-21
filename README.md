@@ -119,7 +119,7 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 **Robert Oulhen**
 
-- 📧 Email : [support@bobmockup.app](mailto:support@bobmockup.app)
+- 📧 Email : [bob.oulhen@gmail.com](mailto:bob.oulhen@gmail.com)
 - 🌐 Site : [bobmockup.app](https://bobmockup.app)
 - 🐙 GitHub : [@robertoulhen](https://github.com/robertoulhen)
 
