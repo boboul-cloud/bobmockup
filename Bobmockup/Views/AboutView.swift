@@ -2,7 +2,9 @@
 //  AboutView.swift
 //  Bobmockup
 //
-//  Created by Robert Oulhen on 21/01/2026.
+//  Réglages et mentions. Les drapeaux emoji sont remplacés par un glyphe
+//  monoline et le code de langue en chiffres tabulaires : une seule
+//  famille d'icônes dans toute l'application.
 //
 
 import SwiftUI
@@ -11,139 +13,148 @@ import StoreKit
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-    
+    @AppStorage("appLanguage") private var appLanguage = "fr"
+
+    private static let privacyURL = URL(string: "https://boboul-cloud.github.io/bobmockup/privacy.html")
+    private static let termsURL = URL(string: "https://boboul-cloud.github.io/bobmockup/terms.html")
+    private static let contactEmail = URL(string: "mailto:bob.oulhen@gmail.com")
+    private static let appStoreURL = URL(string: "https://apps.apple.com/app/bobmockup/id123456789")
+
     private let appVersion: String = {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
     }()
-    
+
     var body: some View {
         NavigationStack {
-            List {
-                // En-tête avec logo
-                Section {
-                    VStack(spacing: 16) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.blue, .purple],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 100, height: 100)
-                            
-                            Image(systemName: "iphone.gen3")
-                                .font(.system(size: 44))
-                                .foregroundColor(.white)
-                        }
-                        .accessibilityHidden(true)
-                        
-                        VStack(spacing: 4) {
-                            Text("Bobmockup")
-                                .font(.title.bold())
-                            
-                            Text("Version \(appVersion)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Space.x6) {
+                    VStack(alignment: .leading, spacing: DS.Space.x2) {
+                        Text("BOBMOCKUP")
+                            .font(.system(size: 26, weight: .black).width(.expanded))
+                            .tracking(1.3)
+                            .foregroundStyle(DS.Palette.ink)
+                        Text("Version \(appVersion)")
+                            .dsNumeric()
+                            .foregroundStyle(DS.Palette.ink3)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
-                    .listRowBackground(Color.clear)
-                }
-                
-                // Liens légaux
-                Section("Informations légales") {
-                    Button {
-                        openURL(URL(string: "https://boboul-cloud.github.io/bobmockup/privacy.html")!)
-                    } label: {
-                        HStack {
-                            Label("Politique de confidentialité", systemImage: "hand.raised.fill")
+                    .padding(.top, DS.Space.x5)
+
+                    section("Langue") {
+                        HStack(spacing: DS.Space.x3) {
+                            DSIcon(name: "globe", size: 20)
+                                .foregroundStyle(DS.Palette.ink2)
+                            Text(appLanguage == "fr" ? "Français" : "English")
+                                .dsBodyStrong()
+                                .foregroundStyle(DS.Palette.ink)
                             Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            DSSegmented(items: ["fr", "en"],
+                                        selection: $appLanguage,
+                                        label: { $0.uppercased() })
+                                .frame(width: 116)
+                        }
+                        .padding(.horizontal, DS.Space.x4)
+                        .frame(minHeight: 64)
+                    }
+
+                    section("Informations légales") {
+                        linkRow("Confidentialité", icon: "hand.raised", url: Self.privacyURL, external: true)
+                        Divider().overlay(DS.Palette.line)
+                        linkRow("Conditions d'utilisation", icon: "doc.text", url: Self.termsURL, external: true)
+                    }
+
+                    section("Support") {
+                        linkRow("Écrire à l'auteur", icon: "envelope", url: Self.contactEmail, external: true)
+                        Divider().overlay(DS.Palette.line)
+                        Button { requestAppReview() } label: {
+                            rowContent("Noter l'application", icon: "star", external: false)
+                        }
+                        .buttonStyle(.plain)
+                        if let url = Self.appStoreURL {
+                            Divider().overlay(DS.Palette.line)
+                            ShareLink(item: url) {
+                                rowContent("Partager Bobmockup", icon: "square.and.arrow.up", external: false)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
-                    .accessibilityLabel("Politique de confidentialité")
-                    .accessibilityHint("Ouvre la politique de confidentialité dans Safari")
-                    
-                    Button {
-                        openURL(URL(string: "https://boboul-cloud.github.io/bobmockup/terms.html")!)
-                    } label: {
-                        HStack {
-                            Label("Conditions d'utilisation", systemImage: "doc.text.fill")
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .accessibilityLabel("Conditions d'utilisation")
-                    .accessibilityHint("Ouvre les conditions d'utilisation dans Safari")
-                }
-                
-                // Support
-                Section("Support") {
-                    Button {
-                        openURL(URL(string: "mailto:bob.oulhen@gmail.com")!)
-                    } label: {
-                        HStack {
-                            Label("Nous contacter", systemImage: "envelope.fill")
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .accessibilityLabel("Nous contacter par email")
-                    .accessibilityHint("Ouvre l'application Mail pour envoyer un message")
-                    
-                    Button {
-                        requestAppReview()
-                    } label: {
-                        Label("Noter l'application", systemImage: "star.fill")
-                    }
-                    .accessibilityLabel("Noter l'application")
-                    .accessibilityHint("Ouvre la fenêtre pour noter l'application sur l'App Store")
-                    
-                    ShareLink(item: URL(string: "https://apps.apple.com/app/bobmockup/id123456789")!) {
-                        Label("Partager l'app", systemImage: "square.and.arrow.up")
-                    }
-                    .accessibilityLabel("Partager l'application")
-                    .accessibilityHint("Ouvre le menu de partage pour recommander l'app")
-                }
-                
-                // Crédits
-                Section("Crédits") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Développé avec ❤️ par Robert Oulhen")
-                            .font(.subheadline)
+
+                    VStack(alignment: .leading, spacing: DS.Space.x1) {
+                        Text("Robert Oulhen, Rennes.")
+                            .dsCaption()
+                            .foregroundStyle(DS.Palette.ink2)
                         Text("© 2026 Bobmockup. Tous droits réservés.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .dsCaption()
+                            .foregroundStyle(DS.Palette.ink3)
                     }
-                    .padding(.vertical, 8)
+                    .padding(.top, DS.Space.x2)
                 }
+                .padding(.horizontal, DS.Space.screen)
+                .padding(.bottom, DS.Space.x7)
             }
-            .navigationTitle("À propos")
+            .background(DS.Palette.base.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("À propos").dsLabel().foregroundStyle(DS.Palette.ink3)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
-                        dismiss()
+                    Button { dismiss() } label: {
+                        DSIcon(name: "xmark", size: 18).foregroundStyle(DS.Palette.ink2)
                     }
+                    .buttonStyle(.plain)
+                    .dsHitTarget()
+                        .accessibilityLabel("Fermer")
                 }
             }
+            .toolbarBackground(DS.Palette.base, for: .navigationBar)
+        }
+        .tint(DS.Palette.safelight)
+    }
+
+    // MARK: - Composition
+
+    private func section<Content: View>(_ title: LocalizedStringKey,
+                                        @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: DS.Space.x3) {
+            DSSectionLabel(text: title)
+            VStack(spacing: 0) { content() }
+                .dsCard()
         }
     }
-    
+
+    private func linkRow(_ title: LocalizedStringKey, icon: String,
+                         url: URL?, external: Bool) -> some View {
+        Button {
+            if let url { openURL(url) }
+        } label: {
+            rowContent(title, icon: icon, external: external)
+        }
+        .buttonStyle(.plain)
+        .disabled(url == nil)
+    }
+
+    private func rowContent(_ title: LocalizedStringKey, icon: String, external: Bool) -> some View {
+        HStack(spacing: DS.Space.x3) {
+            DSIcon(name: icon, size: 20)
+                .foregroundStyle(DS.Palette.ink2)
+            Text(title)
+                .dsBodyStrong()
+                .foregroundStyle(DS.Palette.ink)
+            Spacer()
+            DSIcon(name: external ? "arrow.up.right" : "chevron.right", size: 14)
+                .foregroundStyle(DS.Palette.ink3)
+        }
+        .padding(.horizontal, DS.Space.x4)
+        .frame(minHeight: 56)
+        .contentShape(Rectangle())
+    }
+
     @MainActor
     private func requestAppReview() {
-        guard let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else { return }
+        guard let scene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else { return }
         AppStore.requestReview(in: scene)
     }
 }

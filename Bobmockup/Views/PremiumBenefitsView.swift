@@ -2,263 +2,116 @@
 //  PremiumBenefitsView.swift
 //  Bobmockup
 //
-//  Created by Robert Oulhen on 21/01/2026.
+//  L'état Premium, après achat. Un relevé, pas une célébration.
 //
 
 import SwiftUI
 
 struct PremiumBenefitsView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) private var openURL
-    
+    @State private var purchaseManager = PurchaseManager.shared
+    @State private var isRestoring = false
+    @State private var restoreMessage: String?
+
     var body: some View {
         NavigationStack {
-            ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.95, green: 0.92, blue: 0.98),
-                        Color(red: 0.98, green: 0.95, blue: 0.97),
-                        Color.white
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Header avec couronne
-                        VStack(spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.orange, Color(red: 0.9, green: 0.6, blue: 0.2)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 100, height: 100)
-                                    .shadow(color: .orange.opacity(0.4), radius: 20)
-                                
-                                Image(systemName: "crown.fill")
-                                    .font(.system(size: 44))
-                                    .foregroundColor(.white)
-                            }
-                            
-                            Text("Passez à Premium")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                            
-                            Text("Débloquez toutes les fonctionnalités")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            // Badge Premium actif
-                            HStack(spacing: 8) {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .foregroundColor(.green)
-                                Text("Premium actif")
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.green)
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(
-                                Capsule()
-                                    .fill(Color.green.opacity(0.15))
-                            )
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Space.x7) {
+                    VStack(alignment: .leading, spacing: DS.Space.x4) {
+                        HStack(spacing: 6) {
+                            DSIcon(name: "checkmark.seal", size: 14)
+                            Text("Actif")
+                                .dsLabel()
                         }
-                        .padding(.top, 20)
-                        
-                        // Section Avantages Premium
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Avantages Premium")
-                                .font(.title3.bold())
-                                .padding(.horizontal)
-                            
-                            VStack(spacing: 0) {
-                                BenefitRow(
-                                    icon: "infinity",
-                                    iconColor: .blue,
-                                    title: "Conversions illimitées",
-                                    description: "Exportez autant de mockups que vous voulez"
-                                )
-                                
-                                Divider().padding(.leading, 72)
-                                
-                                BenefitRow(
-                                    icon: "iphone.gen3",
-                                    iconColor: .green,
-                                    title: "Tous les appareils",
-                                    description: "iPhone, iPad, MacBook et plus encore"
-                                )
-                                
-                                Divider().padding(.leading, 72)
-                                
-                                BenefitRow(
-                                    icon: "paintpalette.fill",
-                                    iconColor: .purple,
-                                    title: "Fonds personnalisés",
-                                    description: "Dégradés, mesh, images de fond"
-                                )
-                                
-                                Divider().padding(.leading, 72)
-                                
-                                BenefitRow(
-                                    icon: "textformat",
-                                    iconColor: .orange,
-                                    title: "Textes et légendes",
-                                    description: "Ajoutez des titres à vos mockups"
-                                )
-                                
-                                Divider().padding(.leading, 72)
-                                
-                                BenefitRow(
-                                    icon: "wand.and.stars",
-                                    iconColor: .pink,
-                                    title: "Effets avancés",
-                                    description: "Ombres, rotation 3D, mise à l'échelle"
-                                )
-                                
-                                Divider().padding(.leading, 72)
-                                
-                                BenefitRow(
-                                    icon: "square.and.arrow.up",
-                                    iconColor: .teal,
-                                    title: "Export haute qualité",
-                                    description: "Images 1080x1920 prêtes pour l'App Store"
-                                )
-                                
-                                Divider().padding(.leading, 72)
-                                
-                                BenefitRow(
-                                    icon: "heart.fill",
-                                    iconColor: .red,
-                                    title: "Soutenez le développement",
-                                    description: "Aidez à améliorer l'application"
-                                )
-                            }
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(.systemBackground))
-                            )
-                            .padding(.horizontal)
+                        .foregroundStyle(DS.Palette.paper)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(DS.Palette.paperWash, in: RoundedRectangle(cornerRadius: DS.Radius.control))
+
+                        Text("Atelier illimité")
+                            .dsDisplayL()
+                            .foregroundStyle(DS.Palette.ink)
+
+                        Text("Le compteur d'épreuves est désactivé. Tous les modes de tirage et toutes les dispositions sont accessibles.")
+                            .dsBody()
+                            .foregroundStyle(DS.Palette.ink2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, DS.Space.x5)
+
+                    VStack(alignment: .leading, spacing: DS.Space.x3) {
+                        DSSectionLabel(text: "Relevé")
+                        HStack(alignment: .bottom, spacing: DS.Space.x4) {
+                            Text("\(purchaseManager.conversionsUsed)")
+                                .dsDisplayXL()
+                                .foregroundStyle(DS.Palette.ink)
+                            Text("épreuves tirées depuis l'installation")
+                                .dsLabel()
+                                .foregroundStyle(DS.Palette.ink3)
+                                .padding(.bottom, 8)
                         }
-                        
-                        // Carte Premium à vie
-                        VStack(spacing: 12) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Premium à vie")
-                                        .font(.headline)
-                                    Text("Paiement unique - Accès à vie")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                    }
+
+                    VStack(alignment: .leading, spacing: DS.Space.x3) {
+                        DSSectionLabel(text: "Inclus")
+                        VStack(spacing: 0) {
+                            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                                PremiumFeatureRow(icon: item.icon, title: item.title, detail: item.detail)
+                                if index != items.count - 1 {
+                                    Divider().overlay(DS.Palette.line)
                                 }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundColor(.green)
                             }
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.pink.opacity(0.5), lineWidth: 2)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(Color.pink.opacity(0.05))
-                                    )
-                            )
                         }
-                        .padding(.horizontal)
-                        
-                        // Bouton Restaurer
+                        .dsCard()
+                    }
+
+                    VStack(spacing: DS.Space.x2) {
                         Button {
-                            // Déjà premium, pas d'action nécessaire
+                            Task {
+                                isRestoring = true
+                                await purchaseManager.restorePurchases()
+                                isRestoring = false
+                                restoreMessage = purchaseManager.isPremium
+                                    ? "Achat restauré." : "Aucun achat à restaurer sur ce compte."
+                            }
                         } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "arrow.clockwise")
-                                Text("Restaurer les achats")
-                            }
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            if isRestoring { ProgressView() } else { Text("Restaurer un achat") }
                         }
-                        .padding(.top, 8)
-                        
-                        // Liens légaux
-                        HStack(spacing: 24) {
-                            Button {
-                                openURL(URL(string: "https://boboul-cloud.github.io/bobmockup/terms.html")!)
-                            } label: {
-                                Text("Conditions")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                            }
-                            
-                            Button {
-                                openURL(URL(string: "https://boboul-cloud.github.io/bobmockup/privacy.html")!)
-                            } label: {
-                                Text("Confidentialité")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                            }
+                        .buttonStyle(DSGhostButton(expands: true))
+
+                        if let restoreMessage {
+                            Text(restoreMessage)
+                                .dsCaption()
+                                .foregroundStyle(DS.Palette.ink2)
                         }
-                        .padding(.bottom, 32)
                     }
                 }
+                .padding(.horizontal, DS.Space.screen)
+                .padding(.bottom, DS.Space.x7)
             }
-            .navigationTitle("Premium")
+            .background(DS.Palette.base.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { dismiss() } label: {
+                        DSIcon(name: "xmark", size: 18).foregroundStyle(DS.Palette.ink2)
                     }
+                    .buttonStyle(.plain)
+                    .dsHitTarget()
+                        .accessibilityLabel("Fermer")
                 }
             }
+            .toolbarBackground(DS.Palette.base, for: .navigationBar)
         }
+        .tint(DS.Palette.safelight)
     }
-}
 
-struct BenefitRow: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    let description: String
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(iconColor.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(iconColor)
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+    private var items: [(icon: String, title: LocalizedStringKey, detail: LocalizedStringKey)] {
+        [("square.on.square", "Tirages illimités", "Plus de compteur d'épreuves"),
+         ("square.stack.3d.down.right", "Export par lot", "Les quatre tailles App Store d'un coup"),
+         ("square.dashed", "Détourage", "PNG transparent, ombre en couche alpha"),
+         ("doc", "PDF vectoriel", "Cadre, texte et ombre restent vectoriels"),
+         ("rectangle.on.rectangle", "Séries et bandes", "Cinq écrans liés, bandeaux paysage")]
     }
 }
 
