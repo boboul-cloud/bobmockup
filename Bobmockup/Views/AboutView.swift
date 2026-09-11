@@ -19,7 +19,7 @@ struct AboutView: View {
     private static let privacyURL = URL(string: "https://boboul-cloud.github.io/bobmockup/privacy.html")
     private static let termsURL = URL(string: "https://boboul-cloud.github.io/bobmockup/terms.html")
     private static let contactEmail = URL(string: "mailto:bob.oulhen@gmail.com")
-    private static let appStoreURL = URL(string: "https://apps.apple.com/app/bobmockup/id123456789")
+    private static let appStoreURL = URL(string: "https://apps.apple.com/app/bobmockup/id6758100933")
 
     private let appVersion: String = {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"

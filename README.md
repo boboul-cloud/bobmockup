@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apps.apple.com/app/bobmockup/id123456789">
+  <a href="https://apps.apple.com/app/bobmockup/id6758100933">
     <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="50">
   </a>
 </p>

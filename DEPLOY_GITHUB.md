@@ -95,7 +95,7 @@ git push
 - ♿ Accessibilité complète (VoiceOver)
 
 ### Installation
-Téléchargez sur l'[App Store](https://apps.apple.com/app/bobmockup/id123456789)
+Téléchargez sur l'[App Store](https://apps.apple.com/app/bobmockup/id6758100933)
 ```
 5. Cliquez **Publish release**
 
