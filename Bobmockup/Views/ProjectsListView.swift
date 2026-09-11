@@ -18,6 +18,7 @@ struct ProjectsListView: View {
     @State private var showPremium = false
     @State private var showBenefits = false
     @State private var showAbout = false
+    @State private var showGuide = false
     @State private var projectToDelete: MockupProject?
 
     var body: some View {
@@ -39,6 +40,15 @@ struct ProjectsListView: View {
                         .font(.system(size: 14, weight: .black).width(.expanded))
                         .tracking(0.85)
                         .foregroundStyle(DS.Palette.ink)
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showGuide = true } label: {
+                        DSIcon(name: "book", size: 20)
+                            .foregroundStyle(DS.Palette.ink2)
+                    }
+                    .buttonStyle(.plain)
+                    .dsHitTarget()
+                    .accessibilityLabel("Mode d'emploi")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAbout = true } label: {
@@ -63,6 +73,7 @@ struct ProjectsListView: View {
         .sheet(isPresented: $showPremium) { PremiumUpgradeView(purchaseManager: purchaseManager) }
         .sheet(isPresented: $showBenefits) { PremiumBenefitsView() }
         .sheet(isPresented: $showAbout) { AboutView() }
+        .sheet(isPresented: $showGuide) { UserGuideView() }
         .confirmationDialog("Supprimer ce projet ?",
                             isPresented: Binding(get: { projectToDelete != nil },
                                                  set: { if !$0 { projectToDelete = nil } }),

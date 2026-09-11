@@ -112,16 +112,31 @@ final class MockupEditorViewModel {
     var exportSizePreset: ExportSizePreset = .iphone67 { didSet { scheduleSave() } }
     var exportMode: ExportMode = .single {
         didSet {
+            guard oldValue != exportMode else { return }
             // Un mode qui n'accepte pas la destination courante la ramène
             // sur la première qu'il autorise.
             if let allowed = exportMode.destinations.first,
                !exportMode.destinations.contains(exportDestination) {
                 exportDestination = allowed
             }
+            // Le mode propose son réglage d'alpha ; il ne l'impose pas.
+            // L'utilisateur peut le contredire juste après.
+            includeAlpha = exportMode.naturalAlpha
         }
     }
     /// Photothèque ou Fichiers — le choix vaut pour toutes les productions.
     var exportDestination: ExportDestination = .photos
+
+    /// Conserver la couche alpha du PNG. Proposé sur tous les modes :
+    /// c'est un choix de tirage, pas une propriété du mode. Le défaut part
+    /// aplati, parce qu'un dépôt App Store refuse toute couche alpha.
+    var includeAlpha: Bool = false
+
+    /// Le réglage réellement appliqué. Un PDF n'a pas de couche alpha à
+    /// conserver : la question ne se pose pas pour lui.
+    var effectiveIncludeAlpha: Bool {
+        exportMode.allowsAlphaChoice ? includeAlpha : false
+    }
 
     // MARK: - État d'interface
 
@@ -269,6 +284,21 @@ final class MockupEditorViewModel {
     }
 
     // MARK: - Composition
+
+    /// La cote réellement tirée. Un mode qui impose son format — le dépôt
+    /// 6,5 pouces — l'emporte sur le format choisi dans l'éditeur, et c'est
+    /// cette cote-là que la feuille de tirage doit annoncer.
+    var effectiveExportSize: ExportSizePreset {
+        exportMode.forcedExportSize ?? exportSizePreset
+    }
+
+    /// La composition telle qu'elle sera tirée, cote du mode comprise.
+    /// L'aperçu de la feuille de tirage doit montrer le vrai cadrage.
+    var exportComposition: CompositionSpec {
+        var spec = composition
+        spec.exportSize = effectiveExportSize
+        return spec
+    }
 
     var composition: CompositionSpec {
         var spec = CompositionSpec()
@@ -479,7 +509,8 @@ final class MockupEditorViewModel {
         do {
             let result = try await ExportService.run(mode: exportMode,
                                                      destination: exportDestination,
-                                                     composition: composition) { value in
+                                                     composition: composition,
+                                                     includeAlpha: effectiveIncludeAlpha) { value in
                 self.exportPhase = .running(value)
             }
             _ = purchaseManager.useConversion()

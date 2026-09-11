@@ -9,6 +9,7 @@
 
 import SwiftUI
 import Photos
+import ImageIO
 import UniformTypeIdentifiers
 
 struct ExportResult {
@@ -51,6 +52,7 @@ enum ExportService {
     static func run(mode: ExportMode,
                     destination: ExportDestination,
                     composition: CompositionSpec,
+                    includeAlpha: Bool,
                     progress: @MainActor (Double) -> Void) async throws -> ExportResult {
 
         // Le presse-papiers ne produit pas de fichier : cas à part.
@@ -77,7 +79,7 @@ enum ExportService {
         // 2. Remise.
         switch destination {
         case .photos:
-            try await saveToPhotoLibrary(renders.map(\.image))
+            try await saveToPhotoLibrary(renders.map { try $0.pngData(includeAlpha: includeAlpha) })
             progress(1)
             return ExportResult(mode: mode, destination: .photos, images: renders.map(\.image),
                                 detail: detailLine(renders, destination: .photos))
@@ -85,7 +87,8 @@ enum ExportService {
         case .files:
             var urls: [URL] = []
             for render in renders {
-                urls.append(try writeTemporaryPNG(render.image, named: render.name))
+                urls.append(try writeTemporaryPNG(render.pngData(includeAlpha: includeAlpha),
+                                                  named: render.name))
             }
             progress(1)
             return ExportResult(mode: mode, destination: .files, images: renders.map(\.image),
@@ -99,11 +102,25 @@ enum ExportService {
         let image: UIImage
         /// Nom de fichier lisible — c'est lui qu'on retrouve dans Fichiers.
         let name: String
+
+        /// Les octets PNG effectivement remis, quelle que soit la destination.
+        /// Le choix d'alpha est appliqué une seule fois, à l'encodage : aucun
+        /// cas de rendu ne peut l'oublier ni le contredire.
+        func pngData(includeAlpha: Bool) throws -> Data {
+            let data = includeAlpha ? image.pngData() : ExportService.opaquePNGData(image)
+            guard let data else { throw ExportError.writeFailed }
+            return data
+        }
     }
 
     private static func render(mode: ExportMode,
-                               composition: CompositionSpec,
+                               composition rawComposition: CompositionSpec,
                                progress: @MainActor (Double) -> Void) async throws -> [Render] {
+
+        // Un mode qui impose sa cote l'emporte sur le format de l'éditeur.
+        var composition = rawComposition
+        if let forced = mode.forcedExportSize { composition.exportSize = forced }
+
         switch mode {
         case .single:
             let image = try render(composition, size: composition.exportSize)
@@ -116,6 +133,11 @@ enum ExportService {
             let image = try render(spec, size: composition.exportSize)
             progress(1)
             return [Render(image: image, name: name(composition.exportSize, suffix: "detoure"))]
+
+        case .appStore65:
+            let image = try render(composition, size: composition.exportSize)
+            progress(1)
+            return [Render(image: image, name: name(composition.exportSize, suffix: "6-5"))]
 
         case .series:
             var renders: [Render] = []
@@ -183,15 +205,50 @@ enum ExportService {
 
     // MARK: - Destinations
 
+    /// Aplatit le tirage et l'encode en PNG **sans canal alpha**.
+    ///
+    /// `pngData()` conserve la composante alpha du CGImage rendu, même quand
+    /// toutes ses valeurs valent 255 : App Store Connect refuse alors la
+    /// capture. On redessine donc sur un contexte dépourvu d'alpha
+    /// (`noneSkipLast`), puis on encode par ImageIO, qui écrit un PNG
+    /// truecolor à trois canaux.
+    ///
+    /// Le fond de secours ne couvre que les pixels qu'un rendu opaque
+    /// n'aurait pas peints — il n'y en a pas en pratique.
+    static func opaquePNGData(_ image: UIImage, background: UIColor = .black) -> Data? {
+        guard let source = image.cgImage, source.width > 0, source.height > 0 else { return nil }
+
+        guard let context = CGContext(data: nil,
+                                      width: source.width,
+                                      height: source.height,
+                                      bitsPerComponent: 8,
+                                      bytesPerRow: 0,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+        else { return nil }
+
+        let frame = CGRect(x: 0, y: 0, width: source.width, height: source.height)
+        context.setFillColor(background.cgColor)
+        context.fill(frame)
+        context.draw(source, in: frame)
+
+        guard let flattened = context.makeImage() else { return nil }
+
+        let buffer = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            buffer, UTType.png.identifier as CFString, 1, nil
+        ) else { return nil }
+        CGImageDestinationAddImage(destination, flattened, nil)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return buffer as Data
+    }
+
     /// Écrit les données PNG, pas l'UIImage : `creationRequestForAsset(from:)`
     /// réencode en JPEG, ce qui recompresse le tirage et détruit la couche
     /// alpha du mode « appareil détouré ».
-    static func saveToPhotoLibrary(_ images: [UIImage]) async throws {
+    static func saveToPhotoLibrary(_ payloads: [Data]) async throws {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else { throw ExportError.photoAccessDenied }
-
-        let payloads = images.compactMap { $0.pngData() }
-        guard payloads.count == images.count else { throw ExportError.writeFailed }
 
         try await PHPhotoLibrary.shared().performChanges {
             for data in payloads {
@@ -203,8 +260,7 @@ enum ExportService {
         }
     }
 
-    static func writeTemporaryPNG(_ image: UIImage, named name: String) throws -> URL {
-        guard let data = image.pngData() else { throw ExportError.writeFailed }
+    static func writeTemporaryPNG(_ data: Data, named name: String) throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         try? FileManager.default.removeItem(at: url)
         try data.write(to: url, options: .atomic)

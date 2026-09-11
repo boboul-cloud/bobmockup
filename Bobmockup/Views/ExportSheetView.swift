@@ -47,6 +47,8 @@ struct ExportSheetView: View {
                             }
                         }
 
+                        alphaSection
+
                         DSNote(text: vm.exportMode.note)
                     }
                     .padding(.horizontal, DS.Space.screen)
@@ -80,7 +82,7 @@ struct ExportSheetView: View {
                 Text("Tirage")
                     .dsBodyStrong()
                     .foregroundStyle(DS.Palette.ink)
-                Text(vm.exportSizePreset.dimensionLabel)
+                Text(vm.effectiveExportSize.dimensionLabel)
                     .dsLabel()
                     .foregroundStyle(DS.Palette.ink3)
             }
@@ -104,10 +106,10 @@ struct ExportSheetView: View {
         HStack {
             Spacer()
             let maxHeight: CGFloat = 190
-            let size = vm.exportSizePreset.size
+            let size = vm.effectiveExportSize.size
             let width = min(240, maxHeight * size.width / size.height)
             let factor = width / size.width
-            ExportComposition(spec: vm.composition, scaleFactor: factor)
+            ExportComposition(spec: vm.exportComposition, scaleFactor: factor)
                 .overlay(Rectangle().stroke(Color.black.opacity(0.35), lineWidth: 1))
                 .overlay(DSCropMarks())
                 .shadow(color: .black.opacity(0.4), radius: 16, y: 8)
@@ -156,6 +158,55 @@ struct ExportSheetView: View {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // MARK: - Couche alpha
+
+    /// Le choix vaut pour tous les modes : c'est un réglage de tirage, pas
+    /// une propriété du mode. On avertit quand le réglage dessert l'intention
+    /// — jamais on ne l'interdit.
+    @ViewBuilder
+    private var alphaSection: some View {
+        VStack(alignment: .leading, spacing: DS.Space.x3) {
+            DSSectionLabel(text: "Couche alpha")
+
+            if vm.exportMode.allowsAlphaChoice {
+                DSToggleRow(title: "Conserver le canal alpha",
+                            subtitle: vm.includeAlpha
+                                ? "PNG à quatre canaux, transparence conservée."
+                                : "PNG aplati à trois canaux, sans transparence.",
+                            isOn: Binding(get: { vm.includeAlpha },
+                                          set: { value in
+                                              withAnimation(DS.Motion.select) { vm.includeAlpha = value }
+                                              DS.Haptics.light()
+                                          }))
+                    .padding(.horizontal, DS.Space.x4)
+                    .dsCard()
+
+                if vm.exportMode.warnsAboutAppStore(includeAlpha: vm.includeAlpha) {
+                    DSNote(icon: "exclamationmark.triangle",
+                           text: "App Store Connect refuse toute capture porteuse d'une couche alpha. Ce tirage vise le dépôt : laissez le canal alpha désactivé, sinon il sera rejeté.")
+                }
+
+                if vm.exportMode.warnsAboutLostTransparency(includeAlpha: vm.includeAlpha) {
+                    DSNote(icon: "exclamationmark.triangle",
+                           text: "Sans couche alpha, le détourage est aplati sur un fond noir et perd son objet. Activez le canal alpha pour conserver la transparence.")
+                }
+            } else {
+                HStack(spacing: DS.Space.x3) {
+                    DSIcon(name: "doc", size: 20)
+                        .foregroundStyle(DS.Palette.ink3)
+                    Text("Un PDF n'a pas de couche alpha à conserver : le réglage ne s'applique pas.")
+                        .dsCaption()
+                        .foregroundStyle(DS.Palette.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, DS.Space.x4)
+                .frame(minHeight: 56)
+                .dsCard()
             }
         }
     }

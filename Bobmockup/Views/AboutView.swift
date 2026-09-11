@@ -14,6 +14,7 @@ struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @AppStorage("appLanguage") private var appLanguage = "fr"
+    @State private var showGuide = false
 
     private static let privacyURL = URL(string: "https://boboul-cloud.github.io/bobmockup/privacy.html")
     private static let termsURL = URL(string: "https://boboul-cloud.github.io/bobmockup/terms.html")
@@ -56,6 +57,13 @@ struct AboutView: View {
                         }
                         .padding(.horizontal, DS.Space.x4)
                         .frame(minHeight: 64)
+                    }
+
+                    section("Prise en main") {
+                        Button { showGuide = true } label: {
+                            rowContent("Mode d'emploi", icon: "book", external: false)
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     section("Informations légales") {
@@ -111,6 +119,7 @@ struct AboutView: View {
             .toolbarBackground(DS.Palette.base, for: .navigationBar)
         }
         .tint(DS.Palette.safelight)
+        .sheet(isPresented: $showGuide) { UserGuideView() }
     }
 
     // MARK: - Composition

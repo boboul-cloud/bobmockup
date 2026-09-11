@@ -256,6 +256,7 @@ enum CaptionPosition: String, CaseIterable, Identifiable, Codable {
 enum ExportSizePreset: String, CaseIterable, Identifiable, Codable {
     case iphone69 = "iPhone 6,9 pouces"
     case iphone67 = "iPhone 6,7 pouces"
+    case iphone65 = "iPhone 6,5 pouces"
     case iphone61 = "iPhone 6,1 pouces"
     case ipad129 = "iPad Pro 13 pouces"
     case landscape169 = "Bandeau paysage"
@@ -271,6 +272,9 @@ enum ExportSizePreset: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .iphone69: return CGSize(width: 1320, height: 2868)
         case .iphone67: return CGSize(width: 1290, height: 2796)
+        // La cote historique du dépôt 6,5 pouces (XS Max, 11 Pro Max).
+        // App Store Connect la réclame encore et la refuse au pixel près.
+        case .iphone65: return CGSize(width: 1242, height: 2688)
         case .iphone61: return CGSize(width: 1179, height: 2556)
         case .ipad129: return CGSize(width: 2064, height: 2752)
         case .landscape169: return CGSize(width: 1600, height: 900)
@@ -289,7 +293,7 @@ enum ExportSizePreset: String, CaseIterable, Identifiable, Codable {
 
     var icon: String {
         switch self {
-        case .iphone69, .iphone67, .iphone61: return "iphone"
+        case .iphone69, .iphone67, .iphone65, .iphone61: return "iphone"
         case .ipad129: return "ipad"
         case .landscape169: return "rectangle"
         case .custom1080: return "rectangle.portrait"
