@@ -9,6 +9,26 @@ retirant le bloc « Corrigé », sans objet pour un nouvel arrivant.
 
 ---
 
+## Texte promotionnel
+
+Champ court affiché en tête de la fiche, 170 caractères maximum. Seul
+texte de la fiche modifiable **sans soumettre de nouvelle version** :
+il peut être changé librement entre deux mises à jour.
+
+### Français — 143 caractères
+
+```
+Un labo photo pour vos captures d'écran. Cadre exact, cotes affichées, couche alpha réglable. Ce que montre l'aperçu est ce qui sort du tirage.
+```
+
+### English — 145 caractères
+
+```
+A photo lab for your screenshots. Exact frame, dimensions on display, alpha channel under your control. What the preview shows is what comes out.
+```
+
+---
+
 ## 3.0 — Français
 
 ```
