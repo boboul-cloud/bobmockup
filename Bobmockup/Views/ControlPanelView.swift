@@ -153,6 +153,11 @@ struct ControlPanelView: View {
                        text: "Si votre capture contient déjà une barre de statut, la laisser activée en créerait une seconde.")
                     .transition(.opacity)
             }
+
+            if vm.showStatusBar && vm.composition.deviceIsLandscape {
+                DSNote(text: "En paysage, l'iPhone masque sa barre de statut : elle ne s'affiche qu'en portrait.")
+                    .transition(.opacity)
+            }
         }
         .animation(DS.Motion.surface, value: vm.showStatusBar)
     }
@@ -220,17 +225,24 @@ struct ControlPanelView: View {
 
     private var captionTab: some View {
         VStack(alignment: .leading, spacing: DS.Space.x6) {
-            VStack(alignment: .leading, spacing: DS.Space.x3) {
-                DSSectionLabel(text: "Accroche")
-                TextField("Ce que la capture doit dire", text: $vm.captionText, axis: .vertical)
-                    .dsBody()
-                    .foregroundStyle(DS.Palette.ink)
-                    .lineLimit(1...3)
-                    .padding(DS.Space.x3)
-                    .frame(minHeight: DS.hit)
-                    .background(DS.Palette.well, in: RoundedRectangle(cornerRadius: DS.Radius.control))
-                    .overlay(RoundedRectangle(cornerRadius: DS.Radius.control).stroke(DS.Palette.line, lineWidth: 1))
-                    .submitLabel(.done)
+            if vm.layout.panelCount > 1 {
+                VStack(alignment: .leading, spacing: DS.Space.x3) {
+                    DSSectionLabel(text: "Accroche — écran 1")
+                    captionField("Ce que le premier écran doit dire", text: $vm.captionText)
+                }
+                VStack(alignment: .leading, spacing: DS.Space.x3) {
+                    DSSectionLabel(text: "Accroche — écran 2")
+                    captionField("Ce que le second écran doit dire", text: $vm.captionText2)
+                    Text("Chaque écran du panorama porte son accroche. L'appareil se cale sur la plus haute des deux, sans en recouvrir aucune.")
+                        .dsCaption()
+                        .foregroundStyle(DS.Palette.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: DS.Space.x3) {
+                    DSSectionLabel(text: "Accroche")
+                    captionField("Ce que la capture doit dire", text: $vm.captionText)
+                }
             }
 
             VStack(alignment: .leading, spacing: DS.Space.x3) {
@@ -322,6 +334,17 @@ struct ControlPanelView: View {
                            format: { "\(Int($0)) %" },
                            onEditingChanged: { began in if began { vm.saveUndoState() } })
 
+            DSDetentSlider(title: "Position horizontale",
+                           value: Binding(get: { Double(vm.deviceXOffset) },
+                                          set: { vm.deviceXOffset = CGFloat($0) }),
+                           range: -600...600, detent: 0, step: 5,
+                           format: { "\(Int($0))" },
+                           onEditingChanged: { began in if began { vm.saveUndoState() } })
+
+            if vm.layout.panelCount > 1 {
+                DSNote(text: "À 0, l'appareil est à cheval sur la jointure : une moitié de l'écran sur chaque tirage. Décalez-le pour en montrer davantage d'un côté.")
+            }
+
             DSDetentSlider(title: "Position verticale",
                            value: Binding(get: { Double(vm.deviceYOffset) },
                                           set: { vm.deviceYOffset = CGFloat($0) }),
@@ -335,6 +358,18 @@ struct ControlPanelView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .animation(DS.Motion.surface, value: vm.shadowEnabled)
+    }
+
+    private func captionField(_ prompt: LocalizedStringKey, text: Binding<String>) -> some View {
+        TextField(prompt, text: text, axis: .vertical)
+            .dsBody()
+            .foregroundStyle(DS.Palette.ink)
+            .lineLimit(1...3)
+            .padding(DS.Space.x3)
+            .frame(minHeight: DS.hit)
+            .background(DS.Palette.well, in: RoundedRectangle(cornerRadius: DS.Radius.control))
+            .overlay(RoundedRectangle(cornerRadius: DS.Radius.control).stroke(DS.Palette.line, lineWidth: 1))
+            .submitLabel(.done)
     }
 
     // MARK: - Pastilles
@@ -466,7 +501,19 @@ struct ControlPanelView: View {
 
     private var frameTab: some View {
         VStack(alignment: .leading, spacing: DS.Space.x4) {
+            DSSectionLabel(text: "Orientation")
+
+            DSSegmented(items: FrameOrientation.allCases,
+                        selection: Binding(get: { vm.orientation },
+                                           set: { vm.saveUndoState(); vm.orientation = $0 }),
+                        label: \.rawValue)
+
+            if vm.orientation == .landscape {
+                DSNote(text: orientationNote)
+            }
+
             DSSectionLabel(text: "Format de sortie")
+                .padding(.top, DS.Space.x2)
 
             VStack(spacing: 0) {
                 ForEach(ExportSizePreset.allCases) { preset in
@@ -481,7 +528,7 @@ struct ControlPanelView: View {
                                 Text(preset.localizedName)
                                     .dsBodyStrong()
                                     .foregroundStyle(DS.Palette.ink)
-                                Text(preset.dimensionLabel)
+                                Text(preset.dimensionLabel(for: vm.orientation))
                                     .dsNumeric()
                                     .foregroundStyle(DS.Palette.ink3)
                             }
@@ -509,6 +556,18 @@ struct ControlPanelView: View {
                 DSNote(text: "La disposition « \(vm.layout.rawValue) » impose son format. Changez de disposition pour choisir librement.")
             }
         }
+        .animation(DS.Motion.surface, value: vm.orientation)
+    }
+
+    /// Ce que le paysage fait réellement, selon l'appareil et le format.
+    private var orientationNote: LocalizedStringKey {
+        if vm.exportSizePreset.hasFixedOrientation {
+            return "Le bandeau est déjà paysage : seul l'appareil se couche."
+        }
+        if !vm.selectedDevice.rotatesWithOrientation {
+            return "Le cadre pivote. Le MacBook, déjà en paysage, reste d'aplomb."
+        }
+        return "Le cadre et l'appareil pivotent ensemble. Posez une capture paysage : elle remplit l'écran couché."
     }
 }
 

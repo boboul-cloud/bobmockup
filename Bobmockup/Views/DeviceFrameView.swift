@@ -18,6 +18,10 @@ struct DeviceFrameView: View {
     var rotation3D: Double = 0
     var deviceColor: DeviceColor = .naturalTitanium
     var showStatusBar: Bool = false
+    /// Appareil couché : il pivote d'un quart de tour vers la gauche — île
+    /// dynamique à gauche, comme un iPhone qu'on tourne pour jouer — et la
+    /// capture, paysage, pivote en sens inverse pour rester d'aplomb.
+    var isLandscape: Bool = false
     
     var baseWidth: CGFloat = 510
     var frameThickness: CGFloat = 12
@@ -39,6 +43,9 @@ struct DeviceFrameView: View {
     private var r: CGFloat { w / 510.0 }
     private var cr: CGFloat { deviceType.cornerRadius * r }
     
+    /// La barre de statut n'existe qu'en portrait : couché, un iPhone la masque.
+    private var drawsStatusBar: Bool { showStatusBar && !isLandscape }
+    
     var body: some View {
         ZStack {
             switch deviceType {
@@ -48,6 +55,12 @@ struct DeviceFrameView: View {
             case .macBookPro: macBookBody
             }
         }
+        // Le quart de tour se fait avant la rotation 3D et l'ombre : l'appareil
+        // couché tourne sur son axe vertical et projette son ombre vers le bas,
+        // comme debout. La boîte de mise en page pivote avec lui.
+        .rotationEffect(.degrees(isLandscape ? -90 : 0))
+        .frame(width: isLandscape ? frameHeight + frameThickness : nil,
+               height: isLandscape ? w + frameThickness : nil)
         .rotation3DEffect(
             .degrees(rotation3D),
             axis: (x: 0, y: 1, z: 0),
@@ -94,6 +107,7 @@ struct DeviceFrameView: View {
                     lineWidth: 1.5 * r
                 )
                 .frame(width: w + frameThickness, height: frameHeight + frameThickness)
+                .omittedInPDF()
             
             // Chanfrein
             RoundedRectangle(cornerRadius: cr + 2 * r)
@@ -121,11 +135,12 @@ struct DeviceFrameView: View {
                     lineWidth: 0.8
                 )
                 .frame(width: w, height: frameHeight)
+                .omittedInPDF()
             
             screenContent
             
             // Status bar
-            if showStatusBar {
+            if drawsStatusBar {
                 StatusBarOverlay(sizeRatio: r, screenWidth: screenWidth)
                     .offset(y: -screenHeight / 2 + 14 * r)
             }
@@ -161,6 +176,7 @@ struct DeviceFrameView: View {
                     lineWidth: 1.2 * r
                 )
                 .frame(width: w + frameThickness, height: frameHeight + frameThickness)
+                .omittedInPDF()
             
             RoundedRectangle(cornerRadius: cr + 2 * r)
                 .fill(Color(white: 0.08))
@@ -176,7 +192,7 @@ struct DeviceFrameView: View {
             
             screenContent
             
-            if showStatusBar {
+            if drawsStatusBar {
                 StatusBarOverlay(sizeRatio: r, screenWidth: screenWidth)
                     .offset(y: -screenHeight / 2 + 14 * r)
             }
@@ -260,11 +276,7 @@ struct DeviceFrameView: View {
                 .frame(width: screenWidth, height: screenHeight)
             
             if let screenshot = screenshot {
-                Image(uiImage: screenshot)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: screenWidth, height: screenHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: cr - 8 * r))
+                screenImage(screenshot)
             } else {
                 Color.clear
                     .frame(width: screenWidth, height: screenHeight)
@@ -282,8 +294,32 @@ struct DeviceFrameView: View {
                                 .font(.system(size: 15 * r, weight: .medium, design: .rounded))
                                 .foregroundColor(.white.opacity(0.4))
                         }
+                        .rotationEffect(.degrees(isLandscape ? 90 : 0))
                     )
             }
+        }
+    }
+    
+    /// La capture remplit l'écran. Couché, l'appareil tourne d'un quart de
+    /// tour à gauche : la capture est posée d'un quart de tour à droite dans
+    /// l'écran d'aplomb, et se retrouve droite une fois l'appareil couché.
+    @ViewBuilder
+    private func screenImage(_ screenshot: UIImage) -> some View {
+        if isLandscape {
+            Image(uiImage: screenshot)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: screenHeight, height: screenWidth)
+                .clipped()
+                .rotationEffect(.degrees(90))
+                .frame(width: screenWidth, height: screenHeight)
+                .clipShape(RoundedRectangle(cornerRadius: cr - 8 * r))
+        } else {
+            Image(uiImage: screenshot)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: screenWidth, height: screenHeight)
+                .clipShape(RoundedRectangle(cornerRadius: cr - 8 * r))
         }
     }
     
@@ -304,6 +340,7 @@ struct DeviceFrameView: View {
                 )
             )
             .frame(width: screenWidth, height: screenHeight)
+            .omittedInPDF()
             .allowsHitTesting(false)
     }
     
@@ -318,6 +355,7 @@ struct DeviceFrameView: View {
             Capsule().fill(
                 LinearGradient(colors: [Color.white.opacity(0.04), Color.clear], startPoint: .top, endPoint: .bottom)
             ).frame(width: 126 * r, height: 37 * r).clipShape(Capsule())
+                .omittedInPDF()
             
             HStack(spacing: 0) {
                 Spacer()
@@ -371,10 +409,19 @@ struct DeviceFrameView: View {
     private var homeIndicator: some View {
         Group {
             if deviceType == .iPhone15Pro || deviceType == .iPhone15 {
-                Capsule()
-                    .fill(Color.white.opacity(0.22))
-                    .frame(width: 135 * r, height: 5 * r)
-                    .offset(y: frameHeight / 2 - 22 * r)
+                if isLandscape {
+                    // Couché, l'indicateur longe le bas de l'écran affiché :
+                    // le flanc gauche de l'appareil d'aplomb.
+                    Capsule()
+                        .fill(Color.white.opacity(0.22))
+                        .frame(width: 5 * r, height: 135 * r)
+                        .offset(x: -w / 2 + 22 * r)
+                } else {
+                    Capsule()
+                        .fill(Color.white.opacity(0.22))
+                        .frame(width: 135 * r, height: 5 * r)
+                        .offset(y: frameHeight / 2 - 22 * r)
+                }
             }
         }
     }
@@ -423,6 +470,32 @@ struct DeviceFrameView: View {
                         lineWidth: 0.5
                     )
             )
+    }
+}
+
+// MARK: - Dégradés translucides en PDF
+
+extension EnvironmentValues {
+    /// Vrai pendant le rendu d'un PDF.
+    @Entry var rendersPDF: Bool = false
+}
+
+/// Un dégradé dont les teintes portent de l'opacité perd cette opacité
+/// quand SwiftUI l'écrit en PDF, même aplati par un `drawingGroup` : le
+/// reflet de l'écran sortait blanc et noir, opaque, et masquait la
+/// capture. Ces reflets ne sont qu'un lustre de quelques pour cent : en
+/// PDF, ils sont omis plutôt que faussés. L'aperçu et les PNG les gardent.
+private struct OmittedInPDF: ViewModifier {
+    @Environment(\.rendersPDF) private var rendersPDF
+
+    func body(content: Content) -> some View {
+        content.opacity(rendersPDF ? 0 : 1)
+    }
+}
+
+private extension View {
+    func omittedInPDF() -> some View {
+        modifier(OmittedInPDF())
     }
 }
 

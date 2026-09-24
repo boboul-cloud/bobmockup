@@ -14,6 +14,7 @@ enum CreationLayout: String, CaseIterable, Identifiable, Codable {
     case single   = "Épreuve"
     case duo      = "Duo"
     case series   = "Série App Store"
+    case panorama = "Panorama"
     case banner   = "Bande"
 
     var id: String { rawValue }
@@ -27,6 +28,7 @@ enum CreationLayout: String, CaseIterable, Identifiable, Codable {
         case .single:  "1 appareil"
         case .duo:     "2 appareils"
         case .series:  "5 écrans liés"
+        case .panorama: "2 écrans enchaînés"
         case .banner:  "Paysage 16:9"
         }
     }
@@ -37,7 +39,16 @@ enum CreationLayout: String, CaseIterable, Identifiable, Codable {
         case .single, .banner: 1
         case .duo: 1
         case .series: 5
+        case .panorama: 2
         }
+    }
+
+    /// Nombre d'écrans posés côte à côte dans une seule composition.
+    /// Le panorama les compose d'un seul tenant — fond continu, appareil à
+    /// cheval sur la jointure — puis les découpe au pixel près : le second
+    /// écran est le prolongement exact du premier.
+    var panelCount: Int {
+        self == .panorama ? 2 : 1
     }
 
     /// Format de sortie imposé par la disposition, s'il y en a un.
@@ -51,7 +62,7 @@ enum CreationLayout: String, CaseIterable, Identifiable, Codable {
     var requiresPremium: Bool {
         switch self {
         case .single, .duo: false
-        case .series, .banner: true
+        case .series, .panorama, .banner: true
         }
     }
 }
@@ -95,6 +106,14 @@ struct CreationLayoutDiagram: View {
                 CGRect(x: (w - total) / 2 + CGFloat(i) * (fw + gap),
                        y: (h - fh) / 2, width: fw, height: fh)
             }
+        case .panorama:
+            // Deux écrans jointifs, l'appareil à cheval sur la jointure.
+            let pw = w * 0.36, ph = h * 0.64
+            let left = CGRect(x: w / 2 - pw, y: (h - ph) / 2, width: pw, height: ph)
+            let right = CGRect(x: w / 2, y: (h - ph) / 2, width: pw, height: ph)
+            let dw = pw * 0.44, dh = ph * 0.62
+            return [left, right,
+                    CGRect(x: (w - dw) / 2, y: left.midY - dh / 2 + ph * 0.08, width: dw, height: dh)]
         case .banner:
             let bw = w * 0.88, bh = h * 0.40
             let outer = CGRect(x: (w - bw) / 2, y: (h - bh) / 2, width: bw, height: bh)

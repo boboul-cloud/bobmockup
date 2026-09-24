@@ -111,7 +111,7 @@ struct PremiumBenefitsView: View {
          ("square.stack.3d.down.right", "Export par lot", "Les quatre tailles App Store d'un coup"),
          ("square.dashed", "Détourage", "PNG transparent, ombre en couche alpha"),
          ("doc", "PDF vectoriel", "Cadre, texte et ombre restent vectoriels"),
-         ("rectangle.on.rectangle", "Séries et bandes", "Cinq écrans liés, bandeaux paysage")]
+         ("rectangle.on.rectangle", "Séries, panoramas et bandes", "Cinq écrans liés, panoramas sur deux écrans, bandeaux paysage")]
     }
 }
 

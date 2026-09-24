@@ -117,11 +117,15 @@ enum ExportMode: String, CaseIterable, Identifiable, Codable {
     }
 
     /// Nombre de fichiers produits, pour annoncer le coût avant de tirer.
-    func fileCount(for layout: CreationLayout) -> Int {
+    /// Un panorama compte un fichier par écran ; une série, un par capture
+    /// réellement posée — elle en annonçait cinq quoi qu'il arrive.
+    func fileCount(for spec: CompositionSpec) -> Int {
+        let screens = spec.panelCount
         switch self {
-        case .single, .transparent, .appStore65, .pdf, .clipboard: 1
-        case .series: 5
-        case .batch: ExportSizePreset.batchSet.count
+        case .pdf, .clipboard: return 1
+        case .single, .transparent, .appStore65: return screens
+        case .series: return screens > 1 ? screens : max(1, spec.screenshots.count)
+        case .batch: return ExportSizePreset.batchSet.count * screens
         }
     }
 

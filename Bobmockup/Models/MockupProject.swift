@@ -66,6 +66,7 @@ struct MockupProject: Identifiable, Codable, Equatable {
     var updatedAt: Date = .now
 
     var layout: CreationLayout = .single
+    var orientation: FrameOrientation = .portrait
     var device: DeviceType = .iPhone15Pro
     var deviceColor: DeviceColor = .naturalTitanium
 
@@ -74,6 +75,8 @@ struct MockupProject: Identifiable, Codable, Equatable {
     var gradientColors: [CodableColor] = CodableColor.defaultBath
 
     var captionText: String = ""
+    /// L'accroche du second écran d'un panorama.
+    var captionText2: String = ""
     var captionColor: CodableColor = .white
     var captionFontSize: CGFloat = 48
     var captionFontName: String = "System"
@@ -84,6 +87,7 @@ struct MockupProject: Identifiable, Codable, Equatable {
     var shadowRadius: CGFloat = 30
     var rotation3D: Double = 0
     var scale: CGFloat = 0.8
+    var deviceXOffset: CGFloat = 0
     var deviceYOffset: CGFloat = 0
     var showStatusBar: Bool = false
 
@@ -91,15 +95,74 @@ struct MockupProject: Identifiable, Codable, Equatable {
     var badgeScale: CGFloat = 1.0
     var exportSizePreset: ExportSizePreset = .iphone67
 
-    /// Nom de fichier de la capture, relatif au dossier des captures.
+    /// Noms de fichier des captures, dans l'ordre des écrans, relatifs au
+    /// dossier des captures. Seule la première était conservée : une série
+    /// ou un duo rouvert avait perdu tous ses écrans sauf un.
+    var screenshotFiles: [String] = []
+    /// L'ancien champ, une seule capture. Relu à l'ouverture des projets
+    /// enregistrés avant la conservation de tous les écrans, et toujours
+    /// écrit pour qu'une version précédente de l'app retrouve la première.
     var screenshotFile: String?
     var backgroundFile: String?
 
     static func == (lhs: MockupProject, rhs: MockupProject) -> Bool { lhs.id == rhs.id }
 
-    /// Résumé affiché sous le nom, dans la langue de l'atelier.
-    var subtitle: String {
-        "\(layout.detailText) · \(exportSizePreset.dimensionLabel)"
+    /// Tous les fichiers du dossier des captures qui appartiennent au projet.
+    var assetFiles: Set<String> {
+        Set(screenshotFiles + [screenshotFile, backgroundFile].compactMap { $0 })
+    }
+
+    /// La cote d'un écran, orientation comprise, précédée du nombre
+    /// d'écrans quand le tirage en compte plusieurs d'un seul tenant.
+    var dimensionLabel: String {
+        let label = exportSizePreset.dimensionLabel(for: orientation)
+        return layout.panelCount > 1 ? "\(layout.panelCount) × \(label)" : label
+    }
+}
+
+// MARK: - Lecture tolérante
+
+extension MockupProject {
+    /// Chaque champ absent reprend sa valeur par défaut. Le décodage
+    /// synthétisé exige toutes les clés : un champ ajouté dans une mise à
+    /// jour aurait rendu illisible l'index entier, et vidé l'atelier.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let base = MockupProject(name: "")
+        func read<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
+            (try? c.decodeIfPresent(T.self, forKey: key)) ?? fallback
+        }
+        self.init(name: try c.decode(String.self, forKey: .name))
+        id = try c.decode(UUID.self, forKey: .id)
+        updatedAt = read(.updatedAt, base.updatedAt)
+        layout = read(.layout, base.layout)
+        orientation = read(.orientation, base.orientation)
+        device = read(.device, base.device)
+        deviceColor = read(.deviceColor, base.deviceColor)
+        backgroundStyle = read(.backgroundStyle, base.backgroundStyle)
+        solidColor = read(.solidColor, base.solidColor)
+        gradientColors = read(.gradientColors, base.gradientColors)
+        captionText = read(.captionText, base.captionText)
+        captionText2 = read(.captionText2, base.captionText2)
+        captionColor = read(.captionColor, base.captionColor)
+        captionFontSize = read(.captionFontSize, base.captionFontSize)
+        captionFontName = read(.captionFontName, base.captionFontName)
+        captionPadding = read(.captionPadding, base.captionPadding)
+        captionPosition = read(.captionPosition, base.captionPosition)
+        shadowEnabled = read(.shadowEnabled, base.shadowEnabled)
+        shadowRadius = read(.shadowRadius, base.shadowRadius)
+        rotation3D = read(.rotation3D, base.rotation3D)
+        scale = read(.scale, base.scale)
+        deviceXOffset = read(.deviceXOffset, base.deviceXOffset)
+        deviceYOffset = read(.deviceYOffset, base.deviceYOffset)
+        showStatusBar = read(.showStatusBar, base.showStatusBar)
+        badges = read(.badges, base.badges)
+        badgeScale = read(.badgeScale, base.badgeScale)
+        exportSizePreset = read(.exportSizePreset, base.exportSizePreset)
+        screenshotFile = try? c.decodeIfPresent(String.self, forKey: .screenshotFile)
+        backgroundFile = try? c.decodeIfPresent(String.self, forKey: .backgroundFile)
+        screenshotFiles = read(.screenshotFiles, [String]())
+        if screenshotFiles.isEmpty, let legacy = screenshotFile { screenshotFiles = [legacy] }
     }
 }
 
@@ -131,8 +194,23 @@ final class ProjectStore {
         guard let data = try? Data(contentsOf: indexURL) else { return }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        projects = (try? decoder.decode([MockupProject].self, from: data)) ?? []
+        guard let decoded = try? decoder.decode([MockupProject].self, from: data) else { return }
+        projects = decoded
         sort()
+        sweepOrphanAssets()
+    }
+
+    /// Efface les captures qu'aucun projet n'emploie. Les versions
+    /// précédentes réécrivaient la capture à chaque enregistrement sans
+    /// effacer l'ancienne : le dossier en a gardé des copies orphelines.
+    /// Ne tourne qu'après une lecture réussie de l'index — sur un index
+    /// illisible, tout paraîtrait orphelin.
+    private func sweepOrphanAssets() {
+        let used = projects.reduce(into: Set<String>()) { $0.formUnion($1.assetFiles) }
+        guard let files = try? fileManager.contentsOfDirectory(atPath: assetsDirectory.path) else { return }
+        for file in files where !used.contains(file) {
+            removeAsset(named: file)
+        }
     }
 
     private func persist() {
@@ -150,10 +228,14 @@ final class ProjectStore {
 
     /// Enregistre ou met à jour un projet. Appelé à chaque modification
     /// de l'éditeur : l'utilisateur n'a jamais à penser à sauvegarder.
+    /// Les captures que le projet n'emploie plus sont effacées du disque.
     func save(_ project: MockupProject) {
         var updated = project
         updated.updatedAt = .now
         if let index = projects.firstIndex(where: { $0.id == project.id }) {
+            for file in projects[index].assetFiles.subtracting(updated.assetFiles) {
+                removeAsset(named: file)
+            }
             projects[index] = updated
         } else {
             projects.insert(updated, at: 0)
@@ -163,8 +245,7 @@ final class ProjectStore {
     }
 
     func delete(_ project: MockupProject) {
-        if let file = project.screenshotFile { removeAsset(named: file) }
-        if let file = project.backgroundFile { removeAsset(named: file) }
+        project.assetFiles.forEach(removeAsset(named:))
         projects.removeAll { $0.id == project.id }
         persist()
     }
@@ -174,7 +255,8 @@ final class ProjectStore {
         copy.id = UUID()
         copy.name = project.name + " (copie)"
         copy.updatedAt = .now
-        if let file = project.screenshotFile { copy.screenshotFile = copyAsset(named: file) }
+        copy.screenshotFiles = project.screenshotFiles.compactMap(copyAsset(named:))
+        copy.screenshotFile = copy.screenshotFiles.first
         if let file = project.backgroundFile { copy.backgroundFile = copyAsset(named: file) }
         projects.insert(copy, at: 0)
         persist()
@@ -188,6 +270,7 @@ final class ProjectStore {
         case .single:  base = "Épreuve"
         case .duo:     base = "Duo"
         case .series:  base = "Série"
+        case .panorama: base = "Panorama"
         case .banner:  base = "Bande"
         }
         let existing = projects.filter { $0.name.hasPrefix(base) }.count

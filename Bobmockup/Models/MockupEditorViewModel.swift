@@ -13,6 +13,7 @@ import PhotosUI
 // MARK: - Instantané pour annuler / rétablir
 
 private struct EditorSnapshot {
+    let orientation: FrameOrientation
     let selectedDevice: DeviceType
     let deviceColor: DeviceColor
     let backgroundStyle: BackgroundStyle
@@ -23,11 +24,13 @@ private struct EditorSnapshot {
     let rotation3D: Double
     let scale: CGFloat
     let captionText: String
+    let captionText2: String
     let captionColor: Color
     let captionFontSize: CGFloat
     let captionFontName: String
     let captionPadding: CGFloat
     let captionPosition: CaptionPosition
+    let deviceXOffset: CGFloat
     let deviceYOffset: CGFloat
     let showStatusBar: Bool
     let badges: [MockupBadge]
@@ -50,6 +53,9 @@ final class MockupEditorViewModel {
             scheduleSave()
         }
     }
+
+    /// Portrait ou paysage. Le cadre pivote, et l'appareil avec lui.
+    var orientation: FrameOrientation = .portrait { didSet { scheduleSave() } }
 
     // MARK: - Appareil
 
@@ -76,6 +82,7 @@ final class MockupEditorViewModel {
     var shadowRadius: CGFloat = 30 { didSet { scheduleSave() } }
     var rotation3D: Double = 0 { didSet { scheduleSave() } }
     var scale: CGFloat = 0.8 { didSet { scheduleSave() } }
+    var deviceXOffset: CGFloat = 0 { didSet { scheduleSave() } }
     var deviceYOffset: CGFloat = 0 { didSet { scheduleSave() } }
 
     // MARK: - Captures
@@ -94,6 +101,8 @@ final class MockupEditorViewModel {
     // MARK: - Accroche
 
     var captionText: String = "" { didSet { scheduleSave() } }
+    /// L'accroche du second écran d'un panorama.
+    var captionText2: String = "" { didSet { scheduleSave() } }
     var captionColor: Color = .white { didSet { scheduleSave() } }
     var captionFontSize: CGFloat = 48 { didSet { scheduleSave() } }
     var captionFontName: String = "System" { didSet { scheduleSave() } }
@@ -185,6 +194,12 @@ final class MockupEditorViewModel {
     private var hasStarted = false
     private var saveTask: Task<Void, Never>?
 
+    /// Les images du projet déjà écrites sur disque, et sous quel nom.
+    /// Une image n'est encodée qu'une fois : chaque enregistrement
+    /// réécrivait sinon toutes les captures sous un nouveau nom — un PNG
+    /// pleine taille par réglage touché, jamais effacé.
+    private var writtenAssets: [(image: UIImage, file: String)] = []
+
     // MARK: - Cycle de vie du projet
 
     func start(layout: CreationLayout, store: ProjectStore) {
@@ -203,12 +218,14 @@ final class MockupEditorViewModel {
         projectID = project.id
         projectName = project.name
         layout = project.layout
+        orientation = project.orientation
         selectedDevice = project.device
         deviceColor = project.deviceColor
         backgroundStyle = project.backgroundStyle
         solidColor = project.solidColor.color
         gradientColors = project.gradientColors.colors
         captionText = project.captionText
+        captionText2 = project.captionText2
         captionColor = project.captionColor.color
         captionFontSize = project.captionFontSize
         captionFontName = project.captionFontName
@@ -218,13 +235,23 @@ final class MockupEditorViewModel {
         shadowRadius = project.shadowRadius
         rotation3D = project.rotation3D
         scale = project.scale
+        deviceXOffset = project.deviceXOffset
         deviceYOffset = project.deviceYOffset
         showStatusBar = project.showStatusBar
         badges = project.badges
         badgeScale = project.badgeScale
         exportSizePreset = project.exportSizePreset
-        if let image = store.readAsset(named: project.screenshotFile) { screenshots = [image] }
+        writtenAssets.removeAll()
+        screenshots = project.screenshotFiles.compactMap { file in
+            guard let image = store.readAsset(named: file) else { return nil }
+            writtenAssets.append((image, file))
+            return image
+        }
+        activeScreenshot = 0
         backgroundImage = store.readAsset(named: project.backgroundFile)
+        if let image = backgroundImage, let file = project.backgroundFile {
+            writtenAssets.append((image, file))
+        }
         undoStack.removeAll(); redoStack.removeAll()
         isRestoring = false
         hasStarted = true
@@ -234,12 +261,14 @@ final class MockupEditorViewModel {
         var project = MockupProject(name: projectName)
         project.id = projectID
         project.layout = layout
+        project.orientation = orientation
         project.device = selectedDevice
         project.deviceColor = deviceColor
         project.backgroundStyle = backgroundStyle
         project.solidColor = CodableColor(solidColor)
         project.gradientColors = gradientColors.codable
         project.captionText = captionText
+        project.captionText2 = captionText2
         project.captionColor = CodableColor(captionColor)
         project.captionFontSize = captionFontSize
         project.captionFontName = captionFontName
@@ -249,14 +278,29 @@ final class MockupEditorViewModel {
         project.shadowRadius = shadowRadius
         project.rotation3D = rotation3D
         project.scale = scale
+        project.deviceXOffset = deviceXOffset
         project.deviceYOffset = deviceYOffset
         project.showStatusBar = showStatusBar
         project.badges = badges
         project.badgeScale = badgeScale
         project.exportSizePreset = exportSizePreset
-        if let first = screenshots.first { project.screenshotFile = store.writeAsset(first) }
-        if let background = backgroundImage { project.backgroundFile = store.writeAsset(background) }
+        project.screenshotFiles = screenshots.compactMap { assetFile(for: $0, store: store) }
+        project.screenshotFile = project.screenshotFiles.first
+        project.backgroundFile = backgroundImage.flatMap { assetFile(for: $0, store: store) }
+        // Le registre ne garde que ce que le projet emploie : le magasin
+        // efface le reste du disque, et une image rendue par « annuler »
+        // sera réécrite sous un nouveau nom.
+        let used = project.assetFiles
+        writtenAssets.removeAll { !used.contains($0.file) }
         return project
+    }
+
+    /// Le fichier d'une image : celui déjà écrit, ou un nouveau.
+    private func assetFile(for image: UIImage, store: ProjectStore) -> String? {
+        if let known = writtenAssets.first(where: { $0.image === image }) { return known.file }
+        guard let file = store.writeAsset(image) else { return nil }
+        writtenAssets.append((image, file))
+        return file
     }
 
     /// Écriture différée : l'utilisateur qui fait glisser une course
@@ -274,13 +318,7 @@ final class MockupEditorViewModel {
     func saveNow() {
         guard hasStarted else { return }
         let store = ProjectStore.shared
-        var project = snapshotForStore(store)
-        if let existing = store.projects.first(where: { $0.id == projectID }) {
-            // Ne pas réécrire les captures si elles n'ont pas changé.
-            if screenshots.isEmpty { project.screenshotFile = existing.screenshotFile }
-            if backgroundImage == nil { project.backgroundFile = existing.backgroundFile }
-        }
-        store.save(project)
+        store.save(snapshotForStore(store))
     }
 
     // MARK: - Composition
@@ -304,11 +342,13 @@ final class MockupEditorViewModel {
         var spec = CompositionSpec()
         spec.layout = layout
         spec.exportSize = exportSizePreset
+        spec.orientation = orientation
         spec.backgroundStyle = backgroundStyle
         spec.solidColor = solidColor
         spec.gradientColors = gradientColors
         spec.backgroundImage = backgroundImage
         spec.captionText = captionText
+        spec.captionText2 = captionText2
         spec.captionFontSize = captionFontSize
         spec.captionFontName = captionFontName
         spec.captionColor = captionColor
@@ -320,6 +360,7 @@ final class MockupEditorViewModel {
         spec.shadowRadius = shadowRadius
         spec.scale = scale
         spec.rotation3D = rotation3D
+        spec.deviceXOffset = deviceXOffset
         spec.deviceYOffset = deviceYOffset
         spec.showStatusBar = showStatusBar
         spec.badges = badges
@@ -333,14 +374,15 @@ final class MockupEditorViewModel {
 
     private func makeSnapshot() -> EditorSnapshot {
         EditorSnapshot(
+            orientation: orientation,
             selectedDevice: selectedDevice, deviceColor: deviceColor,
             backgroundStyle: backgroundStyle, solidColor: solidColor,
             gradientColors: gradientColors, shadowEnabled: shadowEnabled,
             shadowRadius: shadowRadius, rotation3D: rotation3D, scale: scale,
-            captionText: captionText, captionColor: captionColor,
+            captionText: captionText, captionText2: captionText2, captionColor: captionColor,
             captionFontSize: captionFontSize, captionFontName: captionFontName,
             captionPadding: captionPadding, captionPosition: captionPosition,
-            deviceYOffset: deviceYOffset, showStatusBar: showStatusBar,
+            deviceXOffset: deviceXOffset, deviceYOffset: deviceYOffset, showStatusBar: showStatusBar,
             badges: badges, badgeScale: badgeScale,
             exportSizePreset: exportSizePreset, screenshots: screenshots)
     }
@@ -367,6 +409,7 @@ final class MockupEditorViewModel {
 
     private func apply(_ s: EditorSnapshot) {
         isRestoring = true
+        orientation = s.orientation
         selectedDevice = s.selectedDevice
         deviceColor = s.deviceColor
         backgroundStyle = s.backgroundStyle
@@ -377,11 +420,13 @@ final class MockupEditorViewModel {
         rotation3D = s.rotation3D
         scale = s.scale
         captionText = s.captionText
+        captionText2 = s.captionText2
         captionColor = s.captionColor
         captionFontSize = s.captionFontSize
         captionFontName = s.captionFontName
         captionPadding = s.captionPadding
         captionPosition = s.captionPosition
+        deviceXOffset = s.deviceXOffset
         deviceYOffset = s.deviceYOffset
         showStatusBar = s.showStatusBar
         badges = s.badges
@@ -391,6 +436,14 @@ final class MockupEditorViewModel {
         activeScreenshot = min(activeScreenshot, max(0, screenshots.count - 1))
         isRestoring = false
         scheduleSave()
+    }
+
+    // MARK: - Orientation
+
+    func toggleOrientation() {
+        saveUndoState()
+        orientation = orientation.toggled
+        DS.Haptics.light()
     }
 
     // MARK: - Bains
@@ -535,7 +588,11 @@ final class MockupEditorViewModel {
         screenshots.removeAll()
         activeScreenshot = 0
         captionText = ""
+        captionText2 = ""
         badges.removeAll()
+        // Le fond est conservé, mais la nouvelle épreuve l'écrit sous son
+        // propre nom : effacer l'ancien projet ne doit pas le lui retirer.
+        writtenAssets.removeAll()
         undoStack.removeAll()
         redoStack.removeAll()
         projectID = UUID()

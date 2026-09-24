@@ -82,7 +82,7 @@ struct ExportSheetView: View {
                 Text("Tirage")
                     .dsBodyStrong()
                     .foregroundStyle(DS.Palette.ink)
-                Text(vm.effectiveExportSize.dimensionLabel)
+                Text(vm.exportComposition.dimensionLabel)
                     .dsLabel()
                     .foregroundStyle(DS.Palette.ink3)
             }
@@ -101,17 +101,20 @@ struct ExportSheetView: View {
 
     /// L'épreuve n'est qu'un rappel : le grand aperçu est dans l'éditeur.
     /// On la plafonne en hauteur pour que le choix de destination reste
-    /// visible sans faire défiler.
+    /// visible sans faire défiler. Un tirage paysage ou un panorama
+    /// s'étale en largeur plutôt que de rapetisser.
     private var proof: some View {
         HStack {
             Spacer()
             let maxHeight: CGFloat = 190
-            let size = vm.effectiveExportSize.size
-            let width = min(240, maxHeight * size.width / size.height)
+            let spec = vm.exportComposition
+            let size = spec.canvasSize
+            let width = min(320, maxHeight * size.width / size.height)
             let factor = width / size.width
-            ExportComposition(spec: vm.exportComposition, scaleFactor: factor)
+            ExportComposition(spec: spec, scaleFactor: factor)
+                .overlay(DSSeamLines(panels: spec.panelCount))
                 .overlay(Rectangle().stroke(Color.black.opacity(0.35), lineWidth: 1))
-                .overlay(DSCropMarks())
+                .overlay(DSCropMarks(panels: spec.panelCount))
                 .shadow(color: .black.opacity(0.4), radius: 16, y: 8)
             Spacer()
         }
@@ -244,7 +247,7 @@ struct ExportSheetView: View {
 
     private var costLabel: String {
         if isLocked { return "Réservé à l'atelier illimité" }
-        let files = vm.exportMode.fileCount(for: vm.layout)
+        let files = vm.exportMode.fileCount(for: vm.exportComposition)
         if purchaseManager.isPremium {
             return files > 1 ? "\(files) fichiers · illimité" : "Illimité"
         }

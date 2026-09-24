@@ -30,7 +30,7 @@ struct UserGuideView: View {
         Step(number: 4,
              icon: "ruler",
              title: "Choisir le format de sortie",
-             body: "La cote du cadre, annoncée en pixels en haut de l'écran de tirage. C'est elle que vous obtenez, au pixel près."),
+             body: "La cote du cadre et son orientation, portrait ou paysage, annoncées en pixels en haut de l'écran de tirage. C'est elle que vous obtenez, au pixel près."),
         Step(number: 5,
              icon: "square.dashed",
              title: "Décider de la couche alpha",
@@ -159,6 +159,9 @@ struct UserGuideView: View {
             .dsCard()
 
             DSNote(text: "La disposition « Bande » impose son format paysage. Les autres vous laissent choisir librement la cote de sortie.")
+
+            DSNote(icon: "rectangle.split.2x1",
+                   text: "Panorama : deux écrans qui se suivent. Le fond court de l'un à l'autre et l'appareil est posé à cheval sur la jointure, une moitié sur chaque écran. Le tirage produit deux PNG numérotés 01 et 02 : déposez-les dans cet ordre, l'un à côté de l'autre sur la fiche.")
         }
     }
 
@@ -184,6 +187,9 @@ struct UserGuideView: View {
 
             DSNote(icon: "ruler",
                    text: "Les quatre premières cotes sont celles qu'App Store Connect réclame. La cote 6,5 pouces — 1242 × 2688 — reste exigée pour les fiches qui la déclarent encore.")
+
+            DSNote(icon: "rectangle.landscape.rotate",
+                   text: "En paysage, chaque cote pivote : 1290 × 2796 devient 2796 × 1290 — les cotes paysage qu'accepte App Store Connect. L'iPhone et l'iPad se couchent avec le cadre ; le MacBook, déjà en paysage, reste d'aplomb. Le bouton de rotation, en haut de l'éditeur, bascule d'un geste.")
         }
     }
 

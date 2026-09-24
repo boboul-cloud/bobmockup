@@ -160,7 +160,7 @@ struct PremiumUpgradeView: View {
         [("square.on.square", "Tirages illimités", "Plus de compteur d'épreuves"),
          ("square.stack.3d.down.right", "Export par lot", "Les quatre tailles App Store d'un coup"),
          ("square.dashed", "Détourage et PDF", "PNG transparent, PDF vectoriel"),
-         ("rectangle.on.rectangle", "Séries et bandes", "Cinq écrans liés, bandeaux paysage")]
+         ("rectangle.on.rectangle", "Séries, panoramas et bandes", "Cinq écrans liés, panoramas sur deux écrans, bandeaux paysage")]
     }
 }
 

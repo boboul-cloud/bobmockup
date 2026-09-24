@@ -109,6 +109,17 @@
         }
       }
     },
+    "2 écrans enchaînés": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 continuous screens"
+          }
+        }
+      }
+    },
     "5 écrans liés": {
       "extractionState": "manual",
       "localizations": {
@@ -178,6 +189,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Caption"
+          }
+        }
+      }
+    },
+    "Accroche — écran 1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caption — screen 1"
+          }
+        }
+      }
+    },
+    "Accroche — écran 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caption — screen 2"
           }
         }
       }
@@ -590,6 +621,28 @@
         }
       }
     },
+    "Bas D.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bot. R."
+          }
+        }
+      }
+    },
+    "Bas G.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bot. L."
+          }
+        }
+      }
+    },
     "Bas droit": {
       "extractionState": "stale",
       "localizations": {
@@ -608,6 +661,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bottom left"
+          }
+        }
+      }
+    },
+    "Bascule le tirage entre portrait et paysage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switches the print between portrait and landscape"
           }
         }
       }
@@ -801,6 +864,26 @@
         }
       }
     },
+    "Ce que le premier écran doit dire": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the first screen should say"
+          }
+        }
+      }
+    },
+    "Ce que le second écran doit dire": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the second screen should say"
+          }
+        }
+      }
+    },
     "Ce que le tirage produit": {
       "localizations": {
         "en": {
@@ -848,6 +931,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Every travel has a detent. A firm click under your finger marks the return to neutral."
+          }
+        }
+      }
+    },
+    "Chaque écran du panorama porte son accroche. L'appareil se cale sur la plus haute des deux, sans en recouvrir aucune.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each screen of the panorama carries its own caption. The device lines up with the taller of the two and covers neither."
           }
         }
       }
@@ -925,12 +1018,12 @@
         }
       }
     },
-    "Cinq écrans liés, bandeaux paysage": {
+    "Cinq écrans liés, panoramas sur deux écrans, bandeaux paysage": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Five linked screens, landscape banners"
+            "value": "Five linked screens, two-screen panoramas, landscape banners"
           }
         }
       }
@@ -1481,6 +1574,26 @@
         }
       }
     },
+    "En paysage, chaque cote pivote : 1290 × 2796 devient 2796 × 1290 — les cotes paysage qu'accepte App Store Connect. L'iPhone et l'iPad se couchent avec le cadre ; le MacBook, déjà en paysage, reste d'aplomb. Le bouton de rotation, en haut de l'éditeur, bascule d'un geste.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In landscape, every size rotates: 1290 × 2796 becomes 2796 × 1290 — the landscape sizes App Store Connect accepts. iPhone and iPad turn on their side with the frame; the MacBook, already landscape, stays upright. The rotate button at the top of the editor switches in one tap."
+          }
+        }
+      }
+    },
+    "En paysage, l'iPhone masque sa barre de statut : elle ne s'affiche qu'en portrait.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In landscape, iPhone hides its status bar: it only shows in portrait."
+          }
+        }
+      }
+    },
     "English": {
       "localizations": {
         "en": {
@@ -1758,6 +1871,28 @@
         }
       }
     },
+    "Haut D.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top R."
+          }
+        }
+      }
+    },
+    "Haut G.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top L."
+          }
+        }
+      }
+    },
     "Haut droit": {
       "extractionState": "stale",
       "localizations": {
@@ -1917,12 +2052,12 @@
         }
       }
     },
-    "La cote du cadre, annoncée en pixels en haut de l'écran de tirage. C'est elle que vous obtenez, au pixel près.": {
+    "La cote du cadre et son orientation, portrait ou paysage, annoncées en pixels en haut de l'écran de tirage. C'est elle que vous obtenez, au pixel près.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The frame's size, shown in pixels at the top of the print screen. That is what you get, to the pixel."
+            "value": "The frame's size and orientation, portrait or landscape, shown in pixels at the top of the print screen. That is what you get, to the pixel."
           }
         }
       }
@@ -1963,6 +2098,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Language"
+          }
+        }
+      }
+    },
+    "Le bandeau est déjà paysage : seul l'appareil se couche.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The banner is already landscape: only the device turns on its side."
+          }
+        }
+      }
+    },
+    "Le cadre et l'appareil pivotent ensemble. Posez une capture paysage : elle remplit l'écran couché.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frame and device rotate together. Use a landscape screenshot: it fills the sideways screen."
+          }
+        }
+      }
+    },
+    "Le cadre pivote. Le MacBook, déjà en paysage, reste d'aplomb.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The frame rotates. The MacBook, already landscape, stays upright."
           }
         }
       }
@@ -2365,6 +2530,16 @@
         }
       }
     },
+    "Orientation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orientation"
+          }
+        }
+      }
+    },
     "Ouvre l'application Mail pour envoyer un message": {
       "comment": "A hint that instructs the user to open the Mail app to send an email.",
       "extractionState": "stale",
@@ -2649,6 +2824,27 @@
         }
       }
     },
+    "Panorama": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panorama"
+          }
+        }
+      }
+    },
+    "Panorama : deux écrans qui se suivent. Le fond court de l'un à l'autre et l'appareil est posé à cheval sur la jointure, une moitié sur chaque écran. Le tirage produit deux PNG numérotés 01 et 02 : déposez-les dans cet ordre, l'un à côté de l'autre sur la fiche.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panorama: two screens that follow on. The background runs from one to the other and the device straddles the seam, half on each screen. The print produces two PNGs numbered 01 and 02: upload them in that order, side by side on the listing."
+          }
+        }
+      }
+    },
     "Partager Bobmockup": {
       "localizations": {
         "en": {
@@ -2784,6 +2980,17 @@
         }
       }
     },
+    "Paysage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Landscape"
+          }
+        }
+      }
+    },
     "Paysage 16:9": {
       "extractionState": "manual",
       "localizations": {
@@ -2870,6 +3077,16 @@
         }
       }
     },
+    "Pivoter le cadre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate the frame"
+          }
+        }
+      }
+    },
     "Plus de compteur d'épreuves": {
       "localizations": {
         "en": {
@@ -2912,6 +3129,17 @@
         }
       }
     },
+    "Portrait": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portrait"
+          }
+        }
+      }
+    },
     "Poser la capture": {
       "localizations": {
         "en": {
@@ -2949,6 +3177,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Text position"
+          }
+        }
+      }
+    },
+    "Position horizontale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horizontal position"
           }
         }
       }
@@ -3455,12 +3693,12 @@
         }
       }
     },
-    "Séries et bandes": {
+    "Séries, panoramas et bandes": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Series and banners"
+            "value": "Series, panoramas and banners"
           }
         }
       }
@@ -4090,6 +4328,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "© 2026 Bobmockup. All rights reserved."
+          }
+        }
+      }
+    },
+    "À 0, l'appareil est à cheval sur la jointure : une moitié de l'écran sur chaque tirage. Décalez-le pour en montrer davantage d'un côté.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At 0, the device straddles the seam: half of its screen on each print. Shift it to show more on one side."
           }
         }
       }

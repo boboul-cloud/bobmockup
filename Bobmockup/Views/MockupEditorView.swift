@@ -74,7 +74,7 @@ struct MockupEditorView: View {
                 Text(vm.projectName)
                     .dsBodyStrong()
                     .foregroundStyle(DS.Palette.ink)
-                Text(vm.exportSizePreset.dimensionLabel)
+                Text(vm.composition.dimensionLabel)
                     .dsLabel()
                     .foregroundStyle(DS.Palette.ink3)
             }
@@ -82,6 +82,19 @@ struct MockupEditorView: View {
         }
 
         ToolbarItemGroup(placement: .topBarTrailing) {
+            // Pivoter est un geste d'épreuve, pas un réglage enfoui : il
+            // reste à portée de pouce, à côté d'annuler.
+            Button { vm.toggleOrientation() } label: {
+                DSIcon(name: vm.orientation == .portrait ? "rectangle.portrait.rotate"
+                                                         : "rectangle.landscape.rotate",
+                       size: 18)
+                    .foregroundStyle(DS.Palette.ink2)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Pivoter le cadre")
+            .accessibilityValue(vm.orientation.localizedName)
+            .accessibilityHint("Bascule le tirage entre portrait et paysage")
+
             Button { performUndo() } label: {
                 DSIcon(name: "arrow.uturn.backward", size: 18)
                     .foregroundStyle(vm.canUndo ? DS.Palette.ink2 : DS.Palette.ink3.opacity(0.5))
@@ -129,9 +142,10 @@ struct MockupEditorView: View {
             // l'appareil se retrouve avec une largeur négative.
             let available = CGSize(width: max(0, geo.size.width - DS.Space.x5 * 2),
                                    height: max(0, geo.size.height - DS.Space.x5 * 2 - 24))
-            let ratio = vm.exportSizePreset.size.width / vm.exportSizePreset.size.height
+            let spec = vm.composition
+            let ratio = spec.canvasSize.width / spec.canvasSize.height
             let width = min(available.width, available.height * ratio)
-            let factor = width / vm.exportSizePreset.size.width
+            let factor = width / spec.canvasSize.width
 
             ZStack {
                 DSCanvasWell()
@@ -139,16 +153,17 @@ struct MockupEditorView: View {
 
                 if factor > 0 {
                     VStack(spacing: DS.Space.x3) {
-                        ExportComposition(spec: vm.composition, scaleFactor: factor)
+                        ExportComposition(spec: spec, scaleFactor: factor)
+                            .overlay(DSSeamLines(panels: spec.panelCount))
                             .overlay(
                                 Rectangle()
                                     .stroke(undoFlash ? DS.Palette.safelight : Color.black.opacity(0.35),
                                             lineWidth: undoFlash ? 2 : 1)
                             )
                             .shadow(color: .black.opacity(0.45), radius: 18, y: 10)
-                            .overlay(DSCropMarks())
+                            .overlay(DSCropMarks(panels: spec.panelCount))
 
-                        Text("Zone d'export \(vm.exportSizePreset.dimensionLabel)")
+                        Text("Zone d'export \(spec.dimensionLabel)")
                             .dsLabel()
                             .foregroundStyle(DS.Palette.ink3)
                     }

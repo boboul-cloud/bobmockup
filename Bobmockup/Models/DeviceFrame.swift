@@ -18,6 +18,9 @@ enum DeviceType: String, CaseIterable, Identifiable, Codable {
     
     var id: String { rawValue }
     
+    /// Hauteur sur largeur de l'appareil posé d'aplomb. L'écran d'un
+    /// MacBook est en paysage : 10 sur 16, et non l'inverse, qui le
+    /// dessinait comme un moniteur tourné sur la tranche.
     var aspectRatio: CGFloat {
         switch self {
         case .iPhone15Pro, .iPhone15:
@@ -25,8 +28,14 @@ enum DeviceType: String, CaseIterable, Identifiable, Codable {
         case .iPadPro:
             return 4.3 / 3
         case .macBookPro:
-            return 16 / 10
+            return 10 / 16
         }
+    }
+    
+    /// Un iPhone ou un iPad pivote d'un quart de tour en paysage.
+    /// Un MacBook est déjà en paysage : il reste d'aplomb, seul le cadre pivote.
+    var rotatesWithOrientation: Bool {
+        self != .macBookPro
     }
     
     var cornerRadius: CGFloat {
@@ -251,6 +260,25 @@ enum CaptionPosition: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+// MARK: - Orientation
+
+/// L'orientation du tirage. En paysage, le cadre pivote — 1290 × 2796
+/// devient 2796 × 1290 — et l'appareil pivote avec lui.
+enum FrameOrientation: String, CaseIterable, Identifiable, Codable {
+    case portrait = "Portrait"
+    case landscape = "Paysage"
+
+    var id: String { rawValue }
+
+    var localizedName: LocalizedStringKey {
+        LocalizedStringKey(rawValue)
+    }
+
+    var toggled: FrameOrientation {
+        self == .portrait ? .landscape : .portrait
+    }
+}
+
 // MARK: - Export Size Preset
 
 enum ExportSizePreset: String, CaseIterable, Identifiable, Codable {
@@ -291,6 +319,21 @@ enum ExportSizePreset: String, CaseIterable, Identifiable, Codable {
 
     var isLandscape: Bool { size.width > size.height }
 
+    /// Le bandeau est paysage par nature : il ne pivote pas.
+    var hasFixedOrientation: Bool { self == .landscape169 }
+
+    /// La cote dans l'orientation demandée. Les cotes d'App Store Connect
+    /// en paysage sont les cotes portrait pivotées, au pixel près.
+    func size(for orientation: FrameOrientation) -> CGSize {
+        guard orientation == .landscape, !hasFixedOrientation else { return size }
+        return CGSize(width: size.height, height: size.width)
+    }
+
+    func dimensionLabel(for orientation: FrameOrientation) -> String {
+        let oriented = size(for: orientation)
+        return "\(Int(oriented.width)) × \(Int(oriented.height))"
+    }
+
     var icon: String {
         switch self {
         case .iphone69, .iphone67, .iphone65, .iphone61: return "iphone"
@@ -301,7 +344,10 @@ enum ExportSizePreset: String, CaseIterable, Identifiable, Codable {
     }
 
     /// Les formats effectivement exigés au dépôt, pour le tirage en lot.
-    static let batchSet: [ExportSizePreset] = [.iphone69, .iphone67, .iphone61, .ipad129]
+    /// Ce sont ceux qu'annonce le mode « Toutes les tailles » : 6,9 · 6,5 ·
+    /// 6,1 · iPad 13. Le lot tirait la 6,7 à la place de la 6,5 annoncée —
+    /// un doublon de la case 6,9 chez Apple, et la 6,5 manquait.
+    static let batchSet: [ExportSizePreset] = [.iphone69, .iphone65, .iphone61, .ipad129]
 }
 
 // MARK: - Badge

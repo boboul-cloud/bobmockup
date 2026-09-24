@@ -303,8 +303,13 @@ private struct ProjectRow: View {
     let project: MockupProject
     let store: ProjectStore
 
+    /// Un écran de 30 × 46, couché en paysage, doublé en largeur pour un panorama.
     private var thumbnailSize: CGSize {
-        project.exportSizePreset.isLandscape ? CGSize(width: 46, height: 30) : CGSize(width: 30, height: 46)
+        let screen = project.exportSizePreset.size(for: project.orientation)
+        let one = screen.width > screen.height ? CGSize(width: 46, height: 30) : CGSize(width: 30, height: 46)
+        return project.layout.panelCount > 1
+            ? CGSize(width: min(one.width * CGFloat(project.layout.panelCount), 64), height: one.height)
+            : one
     }
 
     var body: some View {
@@ -316,7 +321,8 @@ private struct ProjectRow: View {
                     .dsBodyStrong()
                     .foregroundStyle(DS.Palette.ink)
                     .lineLimit(1)
-                Text(project.subtitle)
+                // La disposition passe par le catalogue ; la cote reste telle quelle.
+                (Text(project.layout.detail) + Text(verbatim: " · \(project.dimensionLabel)"))
                     .dsLabel()
                     .foregroundStyle(DS.Palette.ink3)
             }
@@ -344,12 +350,25 @@ private struct ProjectThumbnail: View {
             RoundedRectangle(cornerRadius: 2)
                 .fill(.black.opacity(0.55))
                 .overlay(RoundedRectangle(cornerRadius: 2).stroke(.white.opacity(0.25), lineWidth: 0.5))
-                .frame(width: size.width * 0.44, height: size.height * 0.62)
+                .frame(width: deviceSize.width, height: deviceSize.height)
+            if project.layout.panelCount > 1 {
+                Rectangle()
+                    .fill(.white.opacity(0.45))
+                    .frame(width: 0.5)
+            }
         }
         .frame(width: size.width, height: size.height)
         .clipShape(RoundedRectangle(cornerRadius: 3))
         .overlay(RoundedRectangle(cornerRadius: 3).stroke(DS.Palette.line, lineWidth: 1))
         .accessibilityHidden(true)
+    }
+
+    /// L'appareil schématisé, couché quand le projet est en paysage.
+    private var deviceSize: CGSize {
+        let panelWidth = size.width / CGFloat(max(project.layout.panelCount, 1))
+        let lying = project.orientation == .landscape && project.device.rotatesWithOrientation
+        return lying ? CGSize(width: panelWidth * 0.62, height: size.height * 0.44)
+                     : CGSize(width: panelWidth * 0.44, height: size.height * 0.62)
     }
 
     @ViewBuilder

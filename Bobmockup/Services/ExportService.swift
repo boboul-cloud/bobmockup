@@ -56,19 +56,22 @@ enum ExportService {
                     progress: @MainActor (Double) -> Void) async throws -> ExportResult {
 
         // Le presse-papiers ne produit pas de fichier : cas à part.
+        // Un panorama y part d'un seul tenant, pour se coller entier.
         if mode == .clipboard {
-            let image = try render(composition, size: composition.exportSize)
+            let image = try render(composition)
             UIPasteboard.general.image = image
             progress(1)
             return ExportResult(mode: mode, images: [image], detail: "Presse-papiers · PNG")
         }
 
         // Le PDF n'est pas une image : il va toujours dans Fichiers.
+        // Une page par écran.
         if mode == .pdf {
             let url = try renderPDF(composition)
             progress(1)
+            let pages = composition.panelCount > 1 ? "\(composition.panelCount) pages" : "1 page"
             return ExportResult(mode: mode, destination: .files, fileURLs: [url],
-                                detail: "Vectoriel · 1 page · Fichiers")
+                                detail: "Vectoriel · \(pages) · Fichiers")
         }
 
         // 1. Rendu — identique quelle que soit la destination.
@@ -123,31 +126,32 @@ enum ExportService {
 
         switch mode {
         case .single:
-            let image = try render(composition, size: composition.exportSize)
             progress(1)
-            return [Render(image: image, name: name(composition.exportSize))]
+            return try renderScreens(composition)
 
         case .transparent:
             var spec = composition
             spec.transparentBackground = true
-            let image = try render(spec, size: composition.exportSize)
             progress(1)
-            return [Render(image: image, name: name(composition.exportSize, suffix: "detoure"))]
+            return try renderScreens(spec, suffix: "detoure")
 
         case .appStore65:
-            let image = try render(composition, size: composition.exportSize)
             progress(1)
-            return [Render(image: image, name: name(composition.exportSize, suffix: "6-5"))]
+            return try renderScreens(composition, suffix: "6-5")
 
         case .series:
+            // Un panorama est déjà une suite d'écrans : sa série, ce sont eux.
+            if composition.panelCount > 1 {
+                progress(1)
+                return try renderScreens(composition)
+            }
             var renders: [Render] = []
             let frames = max(1, composition.screenshots.count)
             for index in 0..<frames {
                 var spec = composition
                 spec.activeScreenshotIndex = index
-                renders.append(Render(image: try render(spec, size: composition.exportSize),
-                                      name: name(composition.exportSize,
-                                                 suffix: String(format: "%02d", index + 1))))
+                renders.append(Render(image: try render(spec),
+                                      name: name(spec, suffix: String(format: "%02d", index + 1))))
                 progress(Double(index + 1) / Double(frames))
                 await Task.yield()
             }
@@ -159,7 +163,7 @@ enum ExportService {
             for (index, preset) in presets.enumerated() {
                 var spec = composition
                 spec.exportSize = preset
-                renders.append(Render(image: try render(spec, size: preset), name: name(preset)))
+                renders.append(contentsOf: try renderScreens(spec))
                 progress(Double(index + 1) / Double(presets.count))
                 await Task.yield()
             }
@@ -170,36 +174,73 @@ enum ExportService {
         }
     }
 
-    static func render(_ spec: CompositionSpec, size: ExportSizePreset) throws -> UIImage {
+    /// Les écrans d'une composition, un fichier chacun. Un panorama est
+    /// rendu d'un seul tenant puis découpé au pixel près : le second écran
+    /// reprend exactement là où le premier s'arrête, sans raccord possible.
+    private static func renderScreens(_ spec: CompositionSpec, suffix: String? = nil) throws -> [Render] {
+        let image = try render(spec)
+        guard spec.panelCount > 1 else {
+            return [Render(image: image, name: name(spec, suffix: suffix))]
+        }
+        return try split(image, into: spec.panelCount).enumerated().map { index, screen in
+            let number = String(format: "%02d", index + 1)
+            return Render(image: screen, name: name(spec, suffix: suffix.map { "\($0)-\(number)" } ?? number))
+        }
+    }
+
+    /// Découpe une image en bandes verticales de même largeur.
+    private static func split(_ image: UIImage, into count: Int) throws -> [UIImage] {
+        guard let source = image.cgImage else { throw ExportError.renderFailed }
+        let width = source.width / count
+        return try (0..<count).map { index in
+            let rect = CGRect(x: index * width, y: 0, width: width, height: source.height)
+            guard let cropped = source.cropping(to: rect) else { throw ExportError.renderFailed }
+            return UIImage(cgImage: cropped, scale: 1, orientation: .up)
+        }
+    }
+
+    /// Rend toute la surface de la composition, écrans d'un panorama compris.
+    static func render(_ spec: CompositionSpec) throws -> UIImage {
+        let size = spec.canvasSize
         let renderer = ImageRenderer(content: ExportComposition(spec: spec))
         renderer.scale = 1
         renderer.isOpaque = !spec.transparentBackground
-        renderer.proposedSize = ProposedViewSize(width: size.size.width, height: size.size.height)
+        renderer.proposedSize = ProposedViewSize(width: size.width, height: size.height)
         guard let image = renderer.uiImage else { throw ExportError.renderFailed }
         return image
     }
 
+    /// Une page par écran. Chaque page cadre son écran dans la composition
+    /// entière : cadre, texte et ombre restent vectoriels, et le fond d'un
+    /// panorama se poursuit d'une page à l'autre.
     static func renderPDF(_ spec: CompositionSpec) throws -> URL {
-        let size = spec.exportSize.size
+        let size = spec.frameSize
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("Bobmockup-\(stamp()).pdf")
 
-        let renderer = ImageRenderer(content: ExportComposition(spec: spec))
-        renderer.proposedSize = ProposedViewSize(width: size.width, height: size.height)
+        var box = CGRect(origin: .zero, size: size)
+        guard let consumer = CGDataConsumer(url: url as CFURL),
+              let context = CGContext(consumer: consumer, mediaBox: &box, nil)
+        else { throw ExportError.writeFailed }
 
-        var didWrite = false
-        renderer.render { _, drawInContext in
-            var box = CGRect(origin: .zero, size: size)
-            guard let consumer = CGDataConsumer(url: url as CFURL),
-                  let context = CGContext(consumer: consumer, mediaBox: &box, nil)
-            else { return }
-            context.beginPDFPage(nil)
-            drawInContext(context)
-            context.endPDFPage()
-            context.closePDF()
-            didWrite = true
+        var pages = 0
+        for index in 0..<spec.panelCount {
+            let page = ExportComposition(spec: spec)
+                .offset(x: -CGFloat(index) * size.width)
+                .frame(width: size.width, height: size.height, alignment: .leading)
+                .clipped()
+                .environment(\.rendersPDF, true)
+            let renderer = ImageRenderer(content: page)
+            renderer.proposedSize = ProposedViewSize(width: size.width, height: size.height)
+            renderer.render { _, drawInContext in
+                context.beginPDFPage(nil)
+                drawInContext(context)
+                context.endPDFPage()
+                pages += 1
+            }
         }
-        guard didWrite else { throw ExportError.writeFailed }
+        context.closePDF()
+        guard pages == spec.panelCount else { throw ExportError.writeFailed }
         return url
     }
 
@@ -275,8 +316,8 @@ enum ExportService {
         return formatter.string(from: .now)
     }
 
-    private static func name(_ size: ExportSizePreset, suffix: String? = nil) -> String {
-        let dimensions = "\(Int(size.size.width))x\(Int(size.size.height))"
+    private static func name(_ spec: CompositionSpec, suffix: String? = nil) -> String {
+        let dimensions = "\(Int(spec.frameSize.width))x\(Int(spec.frameSize.height))"
         let tail = suffix.map { "-\($0)" } ?? ""
         return "Bobmockup-\(dimensions)\(tail)-\(stamp()).png"
     }

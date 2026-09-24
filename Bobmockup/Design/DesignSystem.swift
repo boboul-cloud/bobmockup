@@ -390,7 +390,10 @@ struct DSCanvasWell: View {
 
 /// Repères de coupe. Ils ne décorent pas : ils délimitent la zone
 /// réellement exportée, exactement comme sur une épreuve d'imprimeur.
+/// Sur un panorama, un repère marque aussi chaque jointure, en tête et
+/// en pied : c'est là que le tirage tranche entre deux écrans.
 struct DSCropMarks: View {
+    var panels: Int = 1
     var length: CGFloat = 11
     var inset: CGFloat = 9
 
@@ -398,6 +401,12 @@ struct DSCropMarks: View {
         GeometryReader { geo in
             let w = geo.size.width, h = geo.size.height
             Path { p in
+                // jointures, hors du cadre
+                for index in 1..<max(panels, 1) {
+                    let x = inset + (w - inset * 2) * CGFloat(index) / CGFloat(panels)
+                    p.move(to: CGPoint(x: x, y: 0)); p.addLine(to: CGPoint(x: x, y: inset - 2))
+                    p.move(to: CGPoint(x: x, y: h)); p.addLine(to: CGPoint(x: x, y: h - inset + 2))
+                }
                 // haut gauche
                 p.move(to: CGPoint(x: 0, y: 0)); p.addLine(to: CGPoint(x: length, y: 0))
                 p.move(to: CGPoint(x: 0, y: 0)); p.addLine(to: CGPoint(x: 0, y: length))
@@ -415,6 +424,32 @@ struct DSCropMarks: View {
             .opacity(0.55)
         }
         .padding(-inset)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// La ligne de coupe d'un panorama, tracée à travers l'aperçu. Elle
+/// n'appartient pas au tirage : elle montre où tombera la découpe, sur
+/// un filet double noir et blanc qui reste lisible sur n'importe quel fond
+/// sans introduire de couleur d'interface dans le canevas.
+struct DSSeamLines: View {
+    let panels: Int
+
+    var body: some View {
+        GeometryReader { geo in
+            let path = Path { p in
+                for index in 1..<max(panels, 1) {
+                    let x = geo.size.width * CGFloat(index) / CGFloat(panels)
+                    p.move(to: CGPoint(x: x, y: 0))
+                    p.addLine(to: CGPoint(x: x, y: geo.size.height))
+                }
+            }
+            ZStack {
+                path.stroke(Color.black.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
+                path.stroke(Color.white.opacity(0.55), style: StrokeStyle(lineWidth: 1, dash: [5, 5], dashPhase: 5))
+            }
+        }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }

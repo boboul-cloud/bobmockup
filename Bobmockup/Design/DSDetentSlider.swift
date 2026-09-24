@@ -100,7 +100,10 @@ struct DSSegmented<Item: Hashable>: View {
                     withAnimation(DS.Motion.select) { selection = item }
                     DS.Haptics.light()
                 } label: {
-                    Text(label(item))
+                    // Les libellés sont des clés du catalogue : passés tels
+                    // quels, « Haut » ou « Dégradé » restaient en français
+                    // dans l'interface anglaise.
+                    Text(LocalizedStringKey(label(item)))
                         .dsCaption()
                         .foregroundStyle(isSelected ? DS.Palette.ink : DS.Palette.ink2)
                         .frame(maxWidth: .infinity, minHeight: 38)
