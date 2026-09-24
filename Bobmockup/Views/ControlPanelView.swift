@@ -327,6 +327,16 @@ struct ControlPanelView: View {
                            format: { "\(Int($0))°" },
                            onEditingChanged: { began in if began { vm.saveUndoState() } })
 
+            if vm.layout == .duo {
+                DSDetentSlider(title: "Pivot",
+                               value: $vm.pivot,
+                               range: -30...30, detent: 0,
+                               format: { "\(Int($0))°" },
+                               onEditingChanged: { began in if began { vm.saveUndoState() } })
+
+                DSNote(text: "Chaque téléphone pivote sur son propre centre, du même angle : les deux restent à leur place.")
+            }
+
             DSDetentSlider(title: "Échelle",
                            value: Binding(get: { Double(vm.scale) * 100 },
                                           set: { vm.scale = CGFloat($0 / 100) }),

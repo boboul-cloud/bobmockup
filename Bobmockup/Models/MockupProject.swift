@@ -86,6 +86,8 @@ struct MockupProject: Identifiable, Codable, Equatable {
     var shadowEnabled: Bool = true
     var shadowRadius: CGFloat = 30
     var rotation3D: Double = 0
+    /// Le pivot des appareils du Duo, en degrés.
+    var pivot: Double = 0
     var scale: CGFloat = 0.8
     var deviceXOffset: CGFloat = 0
     var deviceYOffset: CGFloat = 0
@@ -152,6 +154,7 @@ extension MockupProject {
         shadowEnabled = read(.shadowEnabled, base.shadowEnabled)
         shadowRadius = read(.shadowRadius, base.shadowRadius)
         rotation3D = read(.rotation3D, base.rotation3D)
+        pivot = read(.pivot, base.pivot)
         scale = read(.scale, base.scale)
         deviceXOffset = read(.deviceXOffset, base.deviceXOffset)
         deviceYOffset = read(.deviceYOffset, base.deviceYOffset)

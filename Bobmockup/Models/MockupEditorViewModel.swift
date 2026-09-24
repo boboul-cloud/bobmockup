@@ -22,6 +22,7 @@ private struct EditorSnapshot {
     let shadowEnabled: Bool
     let shadowRadius: CGFloat
     let rotation3D: Double
+    let pivot: Double
     let scale: CGFloat
     let captionText: String
     let captionText2: String
@@ -81,6 +82,8 @@ final class MockupEditorViewModel {
     var shadowEnabled: Bool = true { didSet { scheduleSave() } }
     var shadowRadius: CGFloat = 30 { didSet { scheduleSave() } }
     var rotation3D: Double = 0 { didSet { scheduleSave() } }
+    /// En Duo, l'inclinaison de chaque appareil sur son centre.
+    var pivot: Double = 0 { didSet { scheduleSave() } }
     var scale: CGFloat = 0.8 { didSet { scheduleSave() } }
     var deviceXOffset: CGFloat = 0 { didSet { scheduleSave() } }
     var deviceYOffset: CGFloat = 0 { didSet { scheduleSave() } }
@@ -234,6 +237,7 @@ final class MockupEditorViewModel {
         shadowEnabled = project.shadowEnabled
         shadowRadius = project.shadowRadius
         rotation3D = project.rotation3D
+        pivot = project.pivot
         scale = project.scale
         deviceXOffset = project.deviceXOffset
         deviceYOffset = project.deviceYOffset
@@ -277,6 +281,7 @@ final class MockupEditorViewModel {
         project.shadowEnabled = shadowEnabled
         project.shadowRadius = shadowRadius
         project.rotation3D = rotation3D
+        project.pivot = pivot
         project.scale = scale
         project.deviceXOffset = deviceXOffset
         project.deviceYOffset = deviceYOffset
@@ -360,6 +365,7 @@ final class MockupEditorViewModel {
         spec.shadowRadius = shadowRadius
         spec.scale = scale
         spec.rotation3D = rotation3D
+        spec.pivot = pivot
         spec.deviceXOffset = deviceXOffset
         spec.deviceYOffset = deviceYOffset
         spec.showStatusBar = showStatusBar
@@ -378,7 +384,7 @@ final class MockupEditorViewModel {
             selectedDevice: selectedDevice, deviceColor: deviceColor,
             backgroundStyle: backgroundStyle, solidColor: solidColor,
             gradientColors: gradientColors, shadowEnabled: shadowEnabled,
-            shadowRadius: shadowRadius, rotation3D: rotation3D, scale: scale,
+            shadowRadius: shadowRadius, rotation3D: rotation3D, pivot: pivot, scale: scale,
             captionText: captionText, captionText2: captionText2, captionColor: captionColor,
             captionFontSize: captionFontSize, captionFontName: captionFontName,
             captionPadding: captionPadding, captionPosition: captionPosition,
@@ -418,6 +424,7 @@ final class MockupEditorViewModel {
         shadowEnabled = s.shadowEnabled
         shadowRadius = s.shadowRadius
         rotation3D = s.rotation3D
+        pivot = s.pivot
         scale = s.scale
         captionText = s.captionText
         captionText2 = s.captionText2

@@ -935,6 +935,16 @@
         }
       }
     },
+    "Chaque téléphone pivote sur son propre centre, du même angle : les deux restent à leur place.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each phone tilts around its own center, by the same angle: both stay in place."
+          }
+        }
+      }
+    },
     "Chaque écran du panorama porte son accroche. L'appareil se cale sur la plus haute des deux, sans en recouvrir aucune.": {
       "localizations": {
         "en": {
@@ -3073,6 +3083,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pinch text to resize • Tap to edit"
+          }
+        }
+      }
+    },
+    "Pivot": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tilt"
           }
         }
       }

@@ -41,6 +41,9 @@ struct CompositionSpec {
     var shadowRadius: CGFloat = 30
     var scale: CGFloat = 0.8
     var rotation3D: Double = 0
+    /// En Duo, chaque appareil pivote dans le plan de l'image, sur son
+    /// propre centre, du même angle : la paire s'incline sans se déplacer.
+    var pivot: Double = 0
     var deviceXOffset: CGFloat = 0
     var deviceYOffset: CGFloat = 0
     var showStatusBar: Bool = false
@@ -272,11 +275,16 @@ struct ExportComposition: View {
     private var devices: some View {
         switch spec.layout {
         case .duo:
+            // Le pivot vient après la rotation 3D : l'appareil tourne d'abord
+            // sur son axe vertical, puis s'incline sur son centre. Pivoter
+            // chaque appareil plutôt que la paire les garde à leur place.
             HStack(spacing: -panel.width * 0.10) {
                 device(screenshot: spec.secondaryScreenshot, scale: spec.scale * 0.78)
                     .rotation3DEffect(.degrees(spec.rotation3D + 8), axis: (x: 0, y: 1, z: 0))
+                    .rotationEffect(.degrees(spec.pivot))
                     .zIndex(0)
                 device(screenshot: spec.primaryScreenshot, scale: spec.scale)
+                    .rotationEffect(.degrees(spec.pivot))
                     .zIndex(1)
             }
         default:
