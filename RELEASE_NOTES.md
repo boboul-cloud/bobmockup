@@ -31,7 +31,7 @@ A photo lab for your screenshots. Exact frame, dimensions on display, alpha chan
 ## 4.0 — Français
 
 ```
-Bobmockup 4.0 élargit le cadre : vos captures passent en paysage, s'étendent sur deux écrans et s'inclinent en duo.
+Bobmockup 4.0 élargit le cadre : vos captures passent en paysage, s'étendent sur deux écrans et pivotent sur leur axe.
 
 • PANORAMA
 Deux écrans qui se suivent sur votre fiche App Store. Le fond court de l'un à l'autre, l'appareil est posé à cheval sur la jointure, et chaque écran porte son accroche. Le tirage les découpe au pixel près en deux fichiers numérotés 01 et 02 : déposez-les dans cet ordre, le second prolonge exactement le premier. L'aperçu trace la jointure pour que vous sachiez où tombera la coupe. En PDF, une page par écran. Inclus dans Premium.
@@ -39,8 +39,8 @@ Deux écrans qui se suivent sur votre fiche App Store. Le fond court de l'un à 
 • PORTRAIT OU PAYSAGE
 Le cadre pivote d'un geste, depuis la barre de l'éditeur : 1290 × 2796 devient 2796 × 1290, les cotes paysage qu'accepte App Store Connect. L'iPhone et l'iPad se couchent avec le cadre, et une capture paysage remplit l'écran couché. Le MacBook, déjà en paysage, reste d'aplomb.
 
-• PIVOT EN DUO
-Un nouveau réglage incline les deux téléphones du Duo, chacun sur son propre centre et du même angle : la paire s'incline sans quitter sa place. Il se combine avec la rotation 3D.
+• PIVOT
+Un nouveau réglage incline l'appareil à plat, sur son propre centre. En Duo, les deux téléphones pivotent du même angle sans quitter leur place ; en panorama, l'appareil tourne sur la jointure. Il se combine avec la rotation 3D.
 
 • POSITION HORIZONTALE
 L'appareil se décale aussi de gauche à droite. En panorama, c'est ce réglage qui choisit la part de l'écran montrée de chaque côté de la jointure.
@@ -52,14 +52,14 @@ CORRIGÉ
 Une série ou un duo rouvert ne gardait que sa première capture : tous les écrans sont désormais conservés. En Duo, les deux appareils affichaient la même capture. « Toutes les tailles » produisait la 6,7 pouces au lieu de la 6,5 annoncée. En PDF, les reflets de l'écran sortaient opaques et masquaient la capture. Le MacBook était dessiné debout, comme un écran tourné sur la tranche. Certains libellés restaient en français dans l'interface anglaise. Enfin, l'app n'accumule plus de copies de vos captures à chaque réglage : la place perdue est récupérée à l'ouverture.
 ```
 
-_2038 caractères._
+_2083 caractères._
 
 ---
 
 ## 4.0 — English
 
 ```
-Bobmockup 4.0 widens the frame: your screenshots go landscape, stretch across two screens and tilt as a pair.
+Bobmockup 4.0 widens the frame: your screenshots go landscape, stretch across two screens and tilt on their axis.
 
 • PANORAMA
 Two screens that follow each other on your App Store page. The background runs from one to the next, the device straddles the seam, and each screen gets its own caption. The print slices them to the pixel into two files numbered 01 and 02: upload them in that order and the second picks up exactly where the first ends. The preview draws the seam so you know where the cut will fall. In PDF, one page per screen. Included with Premium.
@@ -67,8 +67,8 @@ Two screens that follow each other on your App Store page. The background runs f
 • PORTRAIT OR LANDSCAPE
 Rotate the frame with one tap from the editor bar: 1290 × 2796 becomes 2796 × 1290, the landscape sizes App Store Connect accepts. iPhone and iPad lie down with the frame, and a landscape screenshot fills the sideways screen. The MacBook, already landscape, stays upright.
 
-• TILT IN DUO
-A new setting tilts both phones in a Duo, each around its own center and by the same angle: the pair leans without leaving its spot. It combines with 3D rotation.
+• TILT
+A new setting tilts the device flat, around its own center. In a Duo, both phones tilt by the same angle without leaving their spot; in a panorama, the device turns on the seam. It combines with 3D rotation.
 
 • HORIZONTAL POSITION
 The device now moves left and right too. In a panorama, this is what decides how much of the screen shows on each side of the seam.
@@ -80,7 +80,7 @@ FIXED
 A reopened series or duo kept only its first screenshot: every screen is now kept. In Duo, both devices showed the same screenshot. "Every size" produced 6.7-inch instead of the promised 6.5-inch. In PDF, screen reflections came out opaque and hid the screenshot. The MacBook was drawn standing up, like a monitor turned on its side. Some labels stayed in French in the English interface. And the app no longer piles up copies of your screenshots with every change: the lost space is reclaimed at launch.
 ```
 
-_1914 caractères._
+_1956 caractères._
 
 ---
 

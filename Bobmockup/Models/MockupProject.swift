@@ -86,7 +86,7 @@ struct MockupProject: Identifiable, Codable, Equatable {
     var shadowEnabled: Bool = true
     var shadowRadius: CGFloat = 30
     var rotation3D: Double = 0
-    /// Le pivot des appareils du Duo, en degrés.
+    /// Le pivot de l'appareil sur son centre, en degrés.
     var pivot: Double = 0
     var scale: CGFloat = 0.8
     var deviceXOffset: CGFloat = 0

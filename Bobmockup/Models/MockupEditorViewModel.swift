@@ -82,7 +82,7 @@ final class MockupEditorViewModel {
     var shadowEnabled: Bool = true { didSet { scheduleSave() } }
     var shadowRadius: CGFloat = 30 { didSet { scheduleSave() } }
     var rotation3D: Double = 0 { didSet { scheduleSave() } }
-    /// En Duo, l'inclinaison de chaque appareil sur son centre.
+    /// L'inclinaison de l'appareil sur son centre ; en Duo, de chacun des deux.
     var pivot: Double = 0 { didSet { scheduleSave() } }
     var scale: CGFloat = 0.8 { didSet { scheduleSave() } }
     var deviceXOffset: CGFloat = 0 { didSet { scheduleSave() } }

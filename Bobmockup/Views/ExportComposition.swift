@@ -41,8 +41,9 @@ struct CompositionSpec {
     var shadowRadius: CGFloat = 30
     var scale: CGFloat = 0.8
     var rotation3D: Double = 0
-    /// En Duo, chaque appareil pivote dans le plan de l'image, sur son
-    /// propre centre, du même angle : la paire s'incline sans se déplacer.
+    /// L'appareil pivote dans le plan de l'image, sur son propre centre.
+    /// En Duo, les deux du même angle : la paire s'incline sans se
+    /// déplacer. En panorama, ce centre est sur la jointure.
     var pivot: Double = 0
     var deviceXOffset: CGFloat = 0
     var deviceYOffset: CGFloat = 0
@@ -289,6 +290,7 @@ struct ExportComposition: View {
             }
         default:
             device(screenshot: spec.screenshot, scale: spec.scale)
+                .rotationEffect(.degrees(spec.pivot))
         }
     }
 

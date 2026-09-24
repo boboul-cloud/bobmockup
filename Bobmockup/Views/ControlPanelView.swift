@@ -327,15 +327,13 @@ struct ControlPanelView: View {
                            format: { "\(Int($0))°" },
                            onEditingChanged: { began in if began { vm.saveUndoState() } })
 
-            if vm.layout == .duo {
-                DSDetentSlider(title: "Pivot",
-                               value: $vm.pivot,
-                               range: -30...30, detent: 0,
-                               format: { "\(Int($0))°" },
-                               onEditingChanged: { began in if began { vm.saveUndoState() } })
+            DSDetentSlider(title: "Pivot",
+                           value: $vm.pivot,
+                           range: -30...30, detent: 0,
+                           format: { "\(Int($0))°" },
+                           onEditingChanged: { began in if began { vm.saveUndoState() } })
 
-                DSNote(text: "Chaque téléphone pivote sur son propre centre, du même angle : les deux restent à leur place.")
-            }
+            DSNote(text: pivotNote)
 
             DSDetentSlider(title: "Échelle",
                            value: Binding(get: { Double(vm.scale) * 100 },
@@ -368,6 +366,17 @@ struct ControlPanelView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .animation(DS.Motion.surface, value: vm.shadowEnabled)
+    }
+
+    /// Ce que le pivot fait réellement, selon la disposition.
+    private var pivotNote: LocalizedStringKey {
+        if vm.layout == .duo {
+            return "Chaque téléphone pivote sur son propre centre, du même angle : les deux restent à leur place."
+        }
+        if vm.layout.panelCount > 1 {
+            return "L'appareil pivote sur son propre centre. Position horizontale à 0, ce centre est sur la jointure."
+        }
+        return "L'appareil pivote à plat, sur son propre centre."
     }
 
     private func captionField(_ prompt: LocalizedStringKey, text: Binding<String>) -> some View {

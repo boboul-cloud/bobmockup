@@ -2022,6 +2022,26 @@
         }
       }
     },
+    "L'appareil pivote sur son propre centre. Position horizontale à 0, ce centre est sur la jointure.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device tilts around its own center. At horizontal position 0, that center sits on the seam."
+          }
+        }
+      }
+    },
+    "L'appareil pivote à plat, sur son propre centre.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device tilts flat, around its own center."
+          }
+        }
+      }
+    },
     "L'appareil seul, fond supprimé, ombre conservée en couche alpha. Pour poser sur un site ou une présentation.": {
       "localizations": {
         "en": {
